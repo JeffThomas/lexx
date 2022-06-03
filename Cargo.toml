@@ -1,0 +1,18 @@
+[package]
+name = "lexx"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "lexx"
+path = "src/main.rs"
+
+[lib]
+name = "lexx"
+path = "src/lib.rs"
+
+[dependencies]
+either = "0.1.7"
+arrayvec = "0.7.2"
