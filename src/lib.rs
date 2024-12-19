@@ -12,52 +12,52 @@
 //! Token{ token_type: 4, value: "thing".to_string(), line: 2, column: 5, len: 5, precedence: 0};
 //! Token{ token_type: 5, value: ".".to_string(), line: 2, column: 10, len: 1, precedence: 0};
 //! ```
-//! Lexx uses a [LexxInput](crate::input::LexxInput) to provide chars that are fed to
-//! [Matcher](crate::matcher::Matcher) instances until the longest match is found, if any. The
-//! match will be returned as a [Token](token::Token) instance. The
-//! [Token](token::Token) includes a type and the string matched as well as the
-//! line and column where the match was made. A custom [LexxInput](crate::input::LexxInput)
+//! Lexx uses a [LexxInput](LexxInput) to provide chars that are fed to
+//! [Matcher](Matcher) instances until the longest match is found, if any. The
+//! match will be returned as a [Token](Token) instance. The
+//! [Token](Token) includes a type and the string matched as well as the
+//! line and column where the match was made. A custom [LexxInput](LexxInput)
 //! can be passed to Lexx but the library comes with implementations for
-//! [String](crate::input::InputString) and
-//! [Reader](crate::input::InputReader) types.
+//! [String](input::InputString) and
+//! [Reader](input::InputReader) types.
 //!
 //! Lexx implements [Iterator] so it can be use with `for each`.
 //!
-//! Custom [Matcher](crate::matcher::Matcher)s can also be made though Lexx comes with:
-//! - [WordMatcher](crate::matcher_word::WordMatcher) matches alphabetic characters such as `ABCdef` and `word`
-//! - [IntegerMatcher](crate::matcher_integer::IntegerMatcher) matches integers such as `3` or `14537`
-//! - [FloatMatcher](crate::matcher_float::FloatMatcher) matches floats such as `434.312` or `0.001`
-//! - [ExactMatcher](crate::matcher_exact::ExactMatcher) given a vector of strings matches exactly those strings.
+//! Custom [Matcher](Matcher)s can also be made though Lexx comes with:
+//! - [WordMatcher](matcher_word::WordMatcher) matches alphabetic characters such as `ABCdef` and `word`
+//! - [IntegerMatcher](matcher_integer::IntegerMatcher) matches integers such as `3` or `14537`
+//! - [FloatMatcher](matcher_float::FloatMatcher) matches floats such as `434.312` or `0.001`
+//! - [ExactMatcher](matcher_exact::ExactMatcher) given a vector of strings matches exactly those strings.
 //! You can initialize it with a Type to return so you can use multiple ones for different things. For example one
-//! [ExactMatcher](crate::matcher_exact::ExactMatcher) can
+//! [ExactMatcher](matcher_exact::ExactMatcher) can
 //! be used to find operators such as `==` and `+` while another could be used to find block identifiers
 //! such as `(` and `)`.
-//! - [SymbolMatcher](crate::matcher_symbol::SymbolMatcher) matches all non alphanumerics `*&)_#@` or `.`.
+//! - [SymbolMatcher](matcher_symbol::SymbolMatcher) matches all non alphanumerics `*&)_#@` or `.`.
 //! This is a good catch-all matcher.
-//! - [KeywordMatcher](crate::matcher_keyword::KeywordMatcher) matches specific passed in words such as
-//! `new` or `specific`, it differs from the [ExactMatcher](crate::matcher_exact::ExactMatcher) in that it
+//! - [KeywordMatcher](matcher_keyword::KeywordMatcher) matches specific passed in words such as
+//! `new` or `specific`, it differs from the [ExactMatcher](matcher_exact::ExactMatcher) in that it
 //! will not mach substrings, such as the `new` in `renewable` or `newfangled`.
-//! - [WhitespaceMatcher](crate::matcher_whitespace::WhitespaceMatcher) matches whitespace such as `  ` or `\t\r\n`
+//! - [WhitespaceMatcher](matcher_whitespace::WhitespaceMatcher) matches whitespace such as `  ` or `\t\r\n`
 //!
-//! [Matcher](crate::matcher::Matcher)s can be given a precedence that can make a matcher return it's
-//! results even if another matcher has a longer match. For example, both the [WordMatcher](crate::matcher_word::WordMatcher)
-//! and [KeywordMatcher](crate::matcher_keyword::KeywordMatcher) are used at the same time.
+//! [Matcher](Matcher)s can be given a precedence that can make a matcher return it's
+//! results even if another matcher has a longer match. For example, both the [WordMatcher](matcher_word::WordMatcher)
+//! and [KeywordMatcher](matcher_keyword::KeywordMatcher) are used at the same time.
 //!
 //! Note that matchers cannot find matches that start inside the valid matches of other matchers.
-//! For matching `renewable`, the [WordMatcher](crate::matcher_word::WordMatcher)
-//! will make the match even if the [ExactMatcher](crate::matcher_exact::ExactMatcher)
-//! is looking for `new` with a higher precedence because the [WordMatcher](crate::matcher_word::WordMatcher)
+//! For matching `renewable`, the [WordMatcher](matcher_word::WordMatcher)
+//! will make the match even if the [ExactMatcher](matcher_exact::ExactMatcher)
+//! is looking for `new` with a higher precedence because the [WordMatcher](matcher_word::WordMatcher)
 //! will consume all of `renewable` without giving other matchers the chance to look inside of it.
 //!
-//! Also while the [ExactMatcher](crate::matcher_exact::ExactMatcher)
-//! could find the `new` inside `newfangled` the [WordMatcher](crate::matcher_word::WordMatcher)
-//! would match `newfangled` instead since it is longer, unless the [ExactMatcher](crate::matcher_exact::ExactMatcher) is
+//! Also while the [ExactMatcher](matcher_exact::ExactMatcher)
+//! could find the `new` inside `newfangled` the [WordMatcher](matcher_word::WordMatcher)
+//! would match `newfangled` instead since it is longer, unless the [ExactMatcher](matcher_exact::ExactMatcher) is
 //! given a higher precedence in which case it would get to return `new` and the next match would
 //! start at `fangled`.
 //!
 //! To successfully parse an entire stream [Lexx] must have a matcher with which to tokenize every
 //! encountered collection of characters. If a match fails [Lexx] will return Err
-//! [TokenNotFound](crate::LexxError::TokenNotFound) with the text that could not be matched.
+//! [TokenNotFound](LexxError::TokenNotFound) with the text that could not be matched.
 //!
 //! # Panics
 //!
@@ -119,28 +119,28 @@
     unused_qualifications
 )]
 
-/// The [Input](crate::input::LexxInput) for lexx
+/// The [Input](LexxInput) for lexx
 pub mod input;
-/// The [Matcher](crate::matcher::Matcher) trait for lexx
+/// The [Matcher](Matcher) trait for lexx
 pub mod matcher;
 /// The results of a match
 pub mod token;
-/// [RollingCharBuffer](crate::rolling_char_buffer::RollingCharBuffer) is a fast, fixed size
+/// [RollingCharBuffer](RollingCharBuffer) is a fast, fixed size
 /// [char] buffer that can be used as a LIFO or FIFO stack.
 pub mod rolling_char_buffer;
-/// The [ExactMatcher](crate::matcher_exact::ExactMatcher)
+/// The [ExactMatcher](matcher_exact::ExactMatcher)
 pub mod matcher_exact;
-/// The [FloatMatcher](crate::matcher_float::FloatMatcher)
+/// The [FloatMatcher](matcher_float::FloatMatcher)
 pub mod matcher_float;
-/// The [IntegerMatcher](crate::matcher_integer::IntegerMatcher)
+/// The [IntegerMatcher](matcher_integer::IntegerMatcher)
 pub mod matcher_integer;
-/// The [KeywordMatcher](crate::matcher_keyword::KeywordMatcher)
+/// The [KeywordMatcher](matcher_keyword::KeywordMatcher)
 pub mod matcher_keyword;
-/// The [SymbolMatcher](crate::matcher_symbol::SymbolMatcher)
+/// The [SymbolMatcher](matcher_symbol::SymbolMatcher)
 pub mod matcher_symbol;
-/// The [WhitespaceMatcher](crate::matcher_whitespace::WhitespaceMatcher)
+/// The [WhitespaceMatcher](matcher_whitespace::WhitespaceMatcher)
 pub mod matcher_whitespace;
-/// The [WordMatcher](crate::matcher_word::WordMatcher)
+/// The [WordMatcher](matcher_word::WordMatcher)
 pub mod matcher_word;
 
 use arrayvec::ArrayVec;
@@ -429,7 +429,7 @@ impl<const CAP: usize> Lexxer for Lexx<CAP> {
     /// If you're done tokenizing something you can tokenize something else with
     /// all the same matchers without having to make a new Lexx.
     ///
-    /// * `input` - An instance of [LexxInput](crate::input::LexxInput) that provides the char stream that will be lexed.
+    /// * `input` - An instance of [LexxInput](LexxInput) that provides the char stream that will be lexed.
     ///
     fn set_input(&mut self, input: Box<dyn LexxInput>) {
         self.input = input;
@@ -459,8 +459,8 @@ pub trait Lexxer {
     /// will return a clone of the same [Result<Option<Token>, LexxError>](Result). Likewise [Lexx::look_ahead]
     /// can be called repeatedly to get a copy of the same [Result<Option<Token>, LexxError>](Result).
     ///
-    /// * `Matched` - The next [Token](token::Token) found in the input.
-    /// * `EndOfInput` - No more chars in the given [LexxInput](crate::input::LexxInput).
+    /// * `Matched` - The next [Token](Token) found in the input.
+    /// * `EndOfInput` - No more chars in the given [LexxInput](LexxInput).
     /// * `Failed` - Something went wrong or no match could be made.
     ///
     /// # Examples
@@ -516,7 +516,7 @@ pub trait Lexxer {
     /// If you're done tokenizing something you can tokenize something else with
     /// all the same matchers without having to make a new Lexx.
     ///
-    /// * `input` - An instance of [LexxInput](crate::input::LexxInput) that provides the char stream that will be lexed.
+    /// * `input` - An instance of [LexxInput](LexxInput) that provides the char stream that will be lexed.
     ///
     fn set_input(&mut self, input: Box<dyn LexxInput>);
 }

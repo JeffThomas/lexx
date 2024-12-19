@@ -1,7 +1,7 @@
 // Token types. These are not an enum so that they can be externally extended
 /// Token type Integer
 pub const TOKEN_TYPE_INTEGER: u16 = 1;
-/// Token type Flota
+/// Token type Float
 pub const TOKEN_TYPE_FLOAT: u16 = 2;
 /// Token type Whitespace
 pub const TOKEN_TYPE_WHITESPACE: u16 = 3;

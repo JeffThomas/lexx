@@ -67,7 +67,7 @@ pub struct ExactMatcher {
 
 impl Matcher for ExactMatcher {
     fn reset(&mut self, _ctx: &mut Box<HashMap<String, i32>>) {
-        for mut t in self.targets.iter_mut() {
+        for t in self.targets.iter_mut() {
             t.matching = true
         }
         self.found = None;

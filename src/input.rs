@@ -5,8 +5,8 @@ use std::fmt::Debug;
 use std::io::Read;
 use std::str::{from_utf8, from_utf8_unchecked};
 
-/// maximum size for input strings for the [InputReader](crate::input::InputReader)
-/// and the size of the buffer windows used by [InputString](crate::input::InputString).
+/// maximum size for input strings for the [InputReader](InputReader)
+/// and the size of the buffer windows used by [InputString](InputString).
 pub const BUFFER_SIZE: usize = 1024;
 
 /// An input error
@@ -118,7 +118,7 @@ impl LexxInput for InputString {
 }
 
 
-/// Implements [LexxInput](LexxInput) for the [Read](std::io::Read) trait.
+/// Implements [LexxInput](LexxInput) for the [Read](Read) trait.
 /// It uses a paged buffer to load the file. [BUFFER_SIZE] sets the size of the buffer used.
 /// The stream needs to be UTF8.
 #[derive(Debug)]
@@ -189,29 +189,43 @@ impl<R> LexxInput for InputReader<R>
         if n == 0 {
             return Ok(None);
         }
-        let se: &str;
+        self.index = 0;
+        let mut se: &str;
         {
-            match from_utf8(&self.buffer[..n]) {
-                Ok(s) => {
-                    se = s;
+            loop {
+                let mut is_good = true;
+                match from_utf8(&self.buffer[self.index..n]) {
+                    Ok(s) => {
+                        se = s;
+                    }
+                    Err(e) => {
+                        let end = e.valid_up_to();
+                        if end == 0 {
+                            // we've moved a bad utf8 code to the front of the buffer
+                            is_good = false;
+                        } else {
+                            self.rollover_start = end;
+                            self.rollover_end = n;
+                        }
+                        // This is safe due to the above check
+                        se = unsafe { from_utf8_unchecked(&self.buffer[self.index..n][..end]) };
+                    }
                 }
-                Err(e) => {
-                    let end = e.valid_up_to();
-                    // This is safe due to the above check
-                    se = unsafe { from_utf8_unchecked(&self.buffer[..n][..end]) };
-                    self.rollover_start = end;
-                    self.rollover_end = n;
+                if is_good {
+                    break;
+                } else {
+                    self.index += 1;
                 }
             }
         }
+        self.index += 1;
         self.size = 0;
-        self.index = 1;
         let cs = se.chars();
         for c in cs {
             self.text[self.size] = c;
             self.size += 1;
         }
-        return Ok(Some(self.text[0]));
+        return Ok(Some(self.text[self.index-1]));
     }
 }
 
