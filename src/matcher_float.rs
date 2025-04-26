@@ -2,8 +2,8 @@ use crate::matcher::{Matcher, MatcherResult};
 use crate::token::{Token, TOKEN_TYPE_FLOAT};
 use std::collections::HashMap;
 
-/// The float matcher matches floating point numbers. To qualify as floating point the numbers must
-/// start and end with a numeric digit and have a period within them. For example `1.0`. Thus
+/// The float matcher matches floating point numbers. To qualify as floating point, the numbers must
+/// start and end with a numeric digit and have a period within them. For example `1.0`. Thus,
 /// `.1` and `1.` do not qualify as floating point numbers.
 ///
 /// # Example
@@ -48,7 +48,7 @@ use std::collections::HashMap;
 pub struct FloatMatcher {
     /// Current size of the ongoing match.
     pub index: usize,
-    /// This matchers precedence.
+    /// This is the matcher precedence.
     pub precedence: u8,
     /// If the dot has been seen or not.
     pub dot: bool,

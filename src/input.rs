@@ -1,3 +1,17 @@
+// =============================
+// Lexx Input Abstractions
+// =============================
+//
+// This module provides input sources for the Lexx lexer, supporting both in-memory strings and buffered streaming input (e.g., files).
+//
+// The core abstraction is the `LexxInput` trait, which yields one character at a time as `Result<Option<char>, LexxInputError>`, allowing for end-of-input and error reporting.
+//
+// - `InputString`: Efficient, fixed-size buffer for string input.
+// - `InputReader`: Buffered, streaming input from any type implementing `Read`, with UTF-8 and buffer boundary handling.
+//
+// All types are designed for robust, panic-free operation with clear error propagation.
+//
+
 use crate::LexxError;
 use std::error::Error;
 use std::fmt;
@@ -5,14 +19,15 @@ use std::fmt::Debug;
 use std::io::Read;
 use std::str::{from_utf8, from_utf8_unchecked};
 
-/// maximum size for input strings for the [InputReader](InputReader)
-/// and the size of the buffer windows used by [InputString](InputString).
+/// Maximum size for input buffers in [`InputString`] and [`InputReader`].
+/// Strings or streams longer than this are truncated or paged in chunks.
 pub const BUFFER_SIZE: usize = 1024;
 
-/// An input error
+/// Error type for input sources used by Lexx.
+/// Used to signal I/O or decoding errors during input processing.
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum LexxInputError {
-    /// An Error
+    /// An error occurred in the input source or during decoding.
     Error(String),
 }
 
@@ -43,49 +58,54 @@ impl From<LexxInputError> for LexxError {
     }
 }
 
-/// LexxInput simply feeds out [Option<char>]s until there are no more chars, and it will return [None]
-/// It doesn't need to be any more complex than that, but it also uses a [Result] to allow more
-/// complex errors to be reported.
+/// Trait for providing character input to the Lexx lexer.
+///
+/// Implementors yield one character at a time, or an error, until end-of-input.
 ///
 /// # Example
-///
 /// ```rust
-/// use lexx::input::InputString;
-/// use crate::lexx::input::LexxInput;
-///
-/// let mut lexx_input = InputString::new(String::from("The\n"));
-///
-/// assert!(matches!(lexx_input.next(), Ok(Some(c)) if c == 'T'));
-/// assert!(matches!(lexx_input.next(), Ok(Some(c)) if c == 'h'));
-/// assert!(matches!(lexx_input.next(), Ok(Some(c)) if c == 'e'));
-/// assert!(matches!(lexx_input.next(), Ok(Some(c)) if c == '\n'));
-/// assert!(matches!(lexx_input.next(), Ok(None)));
+/// use lexx::input::{LexxInput, InputString};
+/// let mut input = InputString::new("The\n".to_string());
+/// assert!(matches!(input.next(), Ok(Some('T'))));
+/// assert!(matches!(input.next(), Ok(Some('h'))));
+/// assert!(matches!(input.next(), Ok(Some('e'))));
+/// assert!(matches!(input.next(), Ok(Some('\n'))));
+/// assert!(matches!(input.next(), Ok(None)));
 /// ```
 pub trait LexxInput: Debug {
-    /// returns the next LexxInputResult
+    /// Returns the next character, or `Ok(None)` at EOF, or an error.
     fn next(&mut self) -> Result<Option<char>, LexxInputError>;
 }
 
-
-/// Implements [LexxInput](LexxInput) for a passed in [String].
+/// In-memory input source for Lexx, using a fixed-size buffer of chars.
+///
+/// Suitable for small or moderate strings. Strings longer than [`BUFFER_SIZE`] are truncated.
+///
+/// # Example
+/// ```rust
+/// use lexx::input::{InputString, LexxInput};
+/// let mut input = InputString::new("abc".to_string());
+/// assert_eq!(input.next().unwrap(), Some('a'));
+/// assert_eq!(input.next().unwrap(), Some('b'));
+/// assert_eq!(input.next().unwrap(), Some('c'));
+/// assert_eq!(input.next().unwrap(), None);
+/// ```
 #[derive(Debug)]
 pub struct InputString {
-    /// Index into the string
+    /// Current index into the buffer.
     index: usize,
-    /// Size of the string in chars
+    /// Number of valid chars in the buffer.
     size: usize,
-    /// char buffer the string is translated into on creation
+    /// Fixed-size buffer of chars.
     chars: Box<[char; BUFFER_SIZE]>,
 }
 
 impl InputString {
-    /// Creates a new InputString, if the passed in string is larger than
-    /// [BUFFER_SIZE](BUFFER_SIZE) the string will be truncated to fit.
+    /// Creates a new `InputString` from the given string.
     ///
-    /// # Arguments
+    /// If the input string is longer than [`BUFFER_SIZE`], it is truncated.
     ///
-    /// * `text` - The [String] that will be output
-    ///
+    /// * `text` - The string to use as input.
     pub fn new(text: String) -> Self {
         let mut chars = Box::new(['x'; BUFFER_SIZE]);
         let mut size: usize = 0;
@@ -106,53 +126,64 @@ impl InputString {
 }
 
 impl LexxInput for InputString {
-    /// Returns each character in the string one at a time until EOF when it will return [Ok(None)]
+    /// Returns each character in the string one at a time until EOF, then returns `Ok(None)`.
     fn next(&mut self) -> Result<Option<char>, LexxInputError> {
         if self.index < self.size {
             let c = self.chars[self.index];
             self.index += 1;
             return Ok(Some(c));
         }
-        return Ok(None);
+        Ok(None)
     }
 }
 
-
-/// Implements [LexxInput](LexxInput) for the [Read](Read) trait.
-/// It uses a paged buffer to load the file. [BUFFER_SIZE] sets the size of the buffer used.
-/// The stream needs to be UTF8.
+/// Buffered, streaming input source for Lexx, reading from any `Read` implementor (e.g., files).
+///
+/// Handles UTF-8 and buffer rollover for multi-byte chars split across buffer boundaries.
+/// Suitable for large files and streaming input.
+///
+/// # Example
+/// ```rust
+/// use std::io::Cursor;
+/// use lexx::input::{InputReader, LexxInput};
+/// let data = b"xyz";
+/// let mut reader = InputReader::new(Cursor::new(&data[..]));
+/// assert_eq!(reader.next().unwrap(), Some('x'));
+/// assert_eq!(reader.next().unwrap(), Some('y'));
+/// assert_eq!(reader.next().unwrap(), Some('z'));
+/// assert_eq!(reader.next().unwrap(), None);
+/// ```
 #[derive(Debug)]
 pub struct InputReader<R>
-    where
-        R: Read + Debug,
+where
+    R: Read + Debug,
 {
-    /// current index into the buffer
+    /// Current index into the char buffer.
     index: usize,
-    /// current amount of data read into the buffer
+    /// Number of valid chars in the buffer.
     size: usize,
-    /// rollover start, a rollover happens when a multi-byte utf code gets cut off by the end of the
-    /// buffer. We need to save the partial code and append it to the start of the buffer on the
-    /// next load.
+    /// Start of rollover bytes for incomplete UTF-8 at buffer end.
     rollover_start: usize,
-    /// rollover end
+    /// End of rollover bytes.
     rollover_end: usize,
-    /// stream handle
+    /// The underlying reader.
     reader: R,
-    /// byte buffer the file is read into
+    /// Buffer for raw bytes from the reader.
     buffer: Box<[u8; BUFFER_SIZE]>,
-    /// char buffer the byte buffer is translated into
+    /// Buffer for decoded chars.
     text: Box<[char; BUFFER_SIZE]>,
 }
 
 impl<R> InputReader<R>
-    where
-        R: Read + Debug,
+where
+    R: Read + Debug,
 {
-    /// creates a new InputReader
+    /// Creates a new `InputReader` from any type implementing `Read`.
+    ///
+    /// The input is buffered and decoded as UTF-8, with rollover handling for multi-byte chars that span buffer boundaries.
     pub fn new(input: R) -> Self {
         let buffer = Box::new([0; BUFFER_SIZE]);
         let text = Box::new(['x'; BUFFER_SIZE]);
-
         InputReader {
             index: 1,
             size: 0,
@@ -166,55 +197,58 @@ impl<R> InputReader<R>
 }
 
 impl<R> LexxInput for InputReader<R>
-    where
-        R: Read + Debug,
+where
+    R: Read + Debug,
 {
-    /// gets the next char from the buffer, re-loads the buffer as needed
+    /// Returns the next character from the stream, handling buffer refills and UTF-8 boundaries.
+    /// Returns `Ok(None)` at EOF.
     fn next(&mut self) -> Result<Option<char>, LexxInputError> {
         if self.index < self.size {
             let c = self.text[self.index];
             self.index += 1;
             return Ok(Some(c));
         }
+        // Read new bytes into buffer
         let n: usize;
         if self.rollover_start == 0 {
             n = self.reader.read(self.buffer.as_mut()).unwrap();
         } else {
-            self.buffer.as_mut().copy_within(self.rollover_start..self.rollover_end, 0);
-            n = self.reader.read(self.buffer[(self.rollover_end-self.rollover_start)..].as_mut()).unwrap()
-                + (self.rollover_end-self.rollover_start);
+            // Move rollover bytes to front
+            let rollover_len = self.rollover_end - self.rollover_start;
+            self.buffer.copy_within(self.rollover_start..self.rollover_end, 0);
+            let read_bytes = self.reader.read(&mut self.buffer[rollover_len..]).unwrap();
+            n = read_bytes + rollover_len;
             self.rollover_start = 0;
         }
-
         if n == 0 {
             return Ok(None);
         }
         self.index = 0;
         let mut se: &str;
         {
+            // Handle incomplete UTF-8 at buffer end
             loop {
                 let mut is_good = true;
                 match from_utf8(&self.buffer[self.index..n]) {
-                    Ok(s) => {
-                        se = s;
+                    Ok(_) => {
+                        se = unsafe { from_utf8_unchecked(&self.buffer[self.index..n]) };
+                        break;
                     }
                     Err(e) => {
                         let end = e.valid_up_to();
                         if end == 0 {
-                            // we've moved a bad utf8 code to the front of the buffer
+                            // Incomplete UTF-8 at start
                             is_good = false;
                         } else {
                             self.rollover_start = end;
                             self.rollover_end = n;
                         }
-                        // This is safe due to the above check
+                        // SAFETY: Only valid portion
                         se = unsafe { from_utf8_unchecked(&self.buffer[self.index..n][..end]) };
                     }
                 }
                 if is_good {
                     break;
-                } else {
-                    self.index += 1;
                 }
             }
         }
@@ -225,10 +259,13 @@ impl<R> LexxInput for InputReader<R>
             self.text[self.size] = c;
             self.size += 1;
         }
-        return Ok(Some(self.text[self.index-1]));
+        Ok(Some(self.text[self.index-1]))
     }
 }
 
+// =============================
+// End of Lexx Input Abstractions
+// =============================
 
 #[cfg(test)]
 mod tests {

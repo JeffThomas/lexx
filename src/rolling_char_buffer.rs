@@ -39,14 +39,14 @@ impl fmt::Display for RollingCharBufferError {
 /// assert_eq!(buffer.len(), 1);
 /// assert_eq!(buffer.is_empty(), false);
 /// assert_eq!(buffer.is_full(), false);
-/// assert!(matches!(buffer.pop(), Result::Ok(c) if c == 'a'));
+/// assert!(matches!(buffer.pop(), Ok(c) if c == 'a'));
 /// assert_eq!(buffer.is_empty(), true);
 /// assert_eq!(buffer.is_full(), false);
 /// assert_eq!(buffer.pop(), Err(RollingCharBufferError::BufferEmptyError));
 /// assert_eq!(buffer.push('b'), Ok(())); // buffer is now ['b']
 /// assert_eq!(buffer.push('c'), Ok(())); // buffer is now ['b', 'c']
 /// assert_eq!(buffer.prefix('a'), Ok(())); // buffer is now ['a', 'b', 'c']
-/// assert!(matches!(buffer.read(), Result::Ok(c) if c == 'a')); // buffer is now ['b', 'c']
+/// assert!(matches!(buffer.read(), Ok(c) if c == 'a')); // buffer is now ['b', 'c']
 /// assert_eq!(buffer.len(), 2);
 /// assert_eq!(buffer.extend(&vec!['d', 'e', 'f']), Ok(0)); // buffer is now ['b', 'c', 'd', 'e', 'f']
 /// assert_eq!(buffer.is_empty(), false);
@@ -54,17 +54,17 @@ impl fmt::Display for RollingCharBufferError {
 /// assert_eq!(buffer.len(), 5);
 /// assert_eq!(buffer.extend(&vec!['g', 'h', 'i']), Err(RollingCharBufferError::BufferFullError));
 /// assert_eq!(buffer.push('g'), Err(RollingCharBufferError::BufferFullError));
-/// assert!(matches!(buffer.read(), Result::Ok(c) if c == 'b')); // buffer is now ['c', 'd', 'e', 'f']
+/// assert!(matches!(buffer.read(), Ok(c) if c == 'b')); // buffer is now ['c', 'd', 'e', 'f']
 /// assert_eq!(buffer.len(), 4);
-/// assert!(matches!(buffer.pop(), Result::Ok(c) if c == 'f')); // buffer is now ['c', 'd', 'e']
+/// assert!(matches!(buffer.pop(), Ok(c) if c == 'f')); // buffer is now ['c', 'd', 'e']
 /// assert_eq!(buffer.len(), 3);
 /// assert_eq!(buffer.prepend(&vec!['a', 'b']), Ok(0)); // buffer is now ['a', 'b', 'c', 'd', 'e']
 /// assert_eq!(buffer.is_full(), true);
-/// assert!(matches!(buffer.read(), Result::Ok(c) if c == 'a'));
-/// assert!(matches!(buffer.pop(), Result::Ok(c) if c == 'e'));
-/// assert!(matches!(buffer.read(), Result::Ok(c) if c == 'b'));
-/// assert!(matches!(buffer.pop(), Result::Ok(c) if c == 'd'));
-/// assert!(matches!(buffer.read(), Result::Ok(c) if c == 'c'));
+/// assert!(matches!(buffer.read(), Ok(c) if c == 'a'));
+/// assert!(matches!(buffer.pop(), Ok(c) if c == 'e'));
+/// assert!(matches!(buffer.read(), Ok(c) if c == 'b'));
+/// assert!(matches!(buffer.pop(), Ok(c) if c == 'd'));
+/// assert!(matches!(buffer.read(), Ok(c) if c == 'c'));
 /// assert_eq!(buffer.pop(), Err(RollingCharBufferError::BufferEmptyError));
 /// assert_eq!(buffer.len(), 0);
 /// assert_eq!(buffer.is_empty(), true);
@@ -112,19 +112,17 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// assert_eq!(buffer.len(), 1);
     /// assert_eq!(buffer.push('b'), Ok(())); // buffer is now ['a', 'b']
     /// assert_eq!(buffer.len(), 2);
-    /// assert!(matches!(buffer.pop(), Result::Ok(c) if c == 'b')); // buffer is now ['a']
+    /// assert!(matches!(buffer.pop(), Ok(c) if c == 'b')); // buffer is now ['a']
     /// assert_eq!(buffer.len(), 1);
     /// ```
     ///
     pub fn len(&self) -> usize {
         if self.full {
             self.cap
+        } else if self.end >= self.start {
+            self.end - self.start
         } else {
-            if self.end >= self.start {
-                self.end - self.start
-            } else {
-                self.cap - (self.start - self.end)
-            }
+            self.cap - (self.start - self.end)
         }
     }
 
@@ -139,12 +137,12 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// assert_eq!(buffer.is_empty(), true);
     /// assert_eq!(buffer.push('a'), Ok(())); // buffer is now ['a']
     /// assert_eq!(buffer.is_empty(), false);
-    /// assert!(matches!(buffer.pop(), Result::Ok(c) if c == 'a')); // buffer is now []
+    /// assert!(matches!(buffer.pop(), Ok(c) if c == 'a')); // buffer is now []
     /// assert_eq!(buffer.is_empty(), true);
     /// ```
     ///
     pub fn is_empty(&self) -> bool {
-        !(self.start != self.end || self.full)
+        self.start == self.end && !self.full
     }
     /// Returns if the buffer is full
     ///
@@ -159,7 +157,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// assert_eq!(buffer.is_full(), false);
     /// assert_eq!(buffer.push('b'), Ok(())); // buffer is now ['a', 'b']
     /// assert_eq!(buffer.is_full(), true);
-    /// assert!(matches!(buffer.pop(), Result::Ok(c) if c == 'b')); // buffer is now ['a']
+    /// assert!(matches!(buffer.pop(), Ok(c) if c == 'b')); // buffer is now ['a']
     /// assert_eq!(buffer.is_full(), false);
     /// ```
     ///
@@ -183,8 +181,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     ///
     pub fn clear(&mut self) {
         self.full = false;
-        self.start = 0;
-        self.end = 0;
+        self.start = self.end;
     }
 
     /// Adds a [char] to the end of the buffer
@@ -204,10 +201,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
             return Err(RollingCharBufferError::BufferFullError);
         }
         self.buffer[self.end] = c;
-        self.end += 1;
-        if self.end == self.cap {
-            self.end = 0;
-        }
+        self.end = (self.end + 1) % self.cap;
         if self.end == self.start {
             self.full = true;
         }
@@ -224,20 +218,17 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// assert_eq!(buffer.push('a'), Ok(())); // buffer is now ['a']
     /// assert_eq!(buffer.push('b'), Ok(())); // buffer is now ['a', 'b']
-    /// assert!(matches!(buffer.read(), Result::Ok(c) if c == 'a')); // buffer is now ['b']
+    /// assert!(matches!(buffer.read(), Ok(c) if c == 'a')); // buffer is now ['b']
     /// ```
     ///
     pub fn read(&mut self) -> Result<char, RollingCharBufferError> {
-        if self.end == self.start && !self.full {
+        if self.is_empty() {
             return Err(RollingCharBufferError::BufferEmptyError);
         }
         let c = self.buffer[self.start];
-        self.start += 1;
-        if self.start == self.cap {
-            self.start = 0
-        }
+        self.start = (self.start + 1) % self.cap;
         if self.full {
-            self.full = false
+            self.full = false;
         }
         Ok(c)
     }
@@ -252,20 +243,16 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// assert_eq!(buffer.push('a'), Ok(())); // buffer is now ['a']
     /// assert_eq!(buffer.push('b'), Ok(())); // buffer is now ['a', 'b']
-    /// assert!(matches!(buffer.pop(), Result::Ok(c) if c == 'b')); // buffer is now ['a']
+    /// assert!(matches!(buffer.pop(), Ok(c) if c == 'b')); // buffer is now ['a']
     /// ```
     ///
     pub fn pop(&mut self) -> Result<char, RollingCharBufferError> {
-        if self.end == self.start && !self.full {
+        if self.is_empty() {
             return Err(RollingCharBufferError::BufferEmptyError);
         }
-        if self.end == 0 {
-            self.end = self.cap - 1;
-        } else {
-            self.end -= 1;
-        }
+        self.end = if self.end == 0 { self.cap - 1 } else { self.end - 1 };
         if self.full {
-            self.full = false
+            self.full = false;
         }
         Ok(self.buffer[self.end])
     }
@@ -286,11 +273,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
         if self.full {
             return Err(RollingCharBufferError::BufferFullError);
         }
-        if self.start == 0 {
-            self.start = self.cap - 1
-        } else {
-            self.start -= 1;
-        }
+        self.start = if self.start == 0 { self.cap - 1 } else { self.start - 1 };
         self.buffer[self.start] = c;
         if self.end == self.start {
             self.full = true;
@@ -312,18 +295,17 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// assert_eq!(buffer.push('a'), Ok(())); // buffer is now ['a']
     /// assert_eq!(buffer.extend(&vec!['b', 'c', 'd']), Ok(1)); // buffer is now ['a', 'b', 'c', 'd']
-    /// assert!(matches!(buffer.read(), Result::Ok(c) if c == 'a')); // buffer is now ['b', 'c', 'd']
-    /// assert!(matches!(buffer.read(), Result::Ok(c) if c == 'b')); // buffer is now ['c', 'd']
+    /// assert!(matches!(buffer.read(), Ok(c) if c == 'a')); // buffer is now ['b', 'c', 'd']
+    /// assert!(matches!(buffer.read(), Ok(c) if c == 'b')); // buffer is now ['c', 'd']
     /// ```
     ///
     pub fn extend(&mut self, charvec: &[char]) -> Result<usize, RollingCharBufferError> {
-        if self.full || charvec.len() > self.cap - self.len() {
+        let free = self.cap - self.len();
+        if self.full || charvec.len() > free {
             return Err(RollingCharBufferError::BufferFullError);
         }
-        for c in charvec {
-            if let Err(e) = self.push(c.clone()) {
-                return Err(e);
-            }
+        for &c in charvec {
+            self.push(c)?;
         }
         Ok(self.cap - self.len())
     }
@@ -342,23 +324,17 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// assert_eq!(buffer.push('a'), Ok(())); // buffer is now ['a']
     /// assert_eq!(buffer.prepend(&vec!['b', 'c', 'd']), Ok(1)); // buffer is now ['b', 'c', 'd', 'a']
-    /// assert!(matches!(buffer.pop(), Result::Ok(c) if c == 'a')); // buffer is now ['b', 'c', 'd']
-    /// assert!(matches!(buffer.pop(), Result::Ok(c) if c == 'd')); // buffer is now ['b', 'c']
+    /// assert!(matches!(buffer.pop(), Ok(c) if c == 'a')); // buffer is now ['b', 'c', 'd']
+    /// assert!(matches!(buffer.pop(), Ok(c) if c == 'd')); // buffer is now ['b', 'c']
     /// ```
     ///
     pub fn prepend(&mut self, cs: &[char]) -> Result<usize, RollingCharBufferError> {
-        if self.full || cs.len() > self.cap - self.len() {
+        let free = self.cap - self.len();
+        if self.full || cs.len() > free {
             return Err(RollingCharBufferError::BufferFullError);
         }
-        let mut i = cs.len() - 1;
-        loop {
-            if let Err(e) = self.prefix(cs[i].clone()) {
-                return Err(e);
-            }
-            if i == 0 {
-                break;
-            }
-            i -= 1;
+        for &c in cs.iter().rev() {
+            self.prefix(c)?;
         }
         Ok(self.cap - self.len())
     }

@@ -81,40 +81,32 @@ impl Matcher for ExactMatcher {
         _value: &[char],
         _ctx: &mut Box<HashMap<String, i32>>,
     ) -> MatcherResult {
-        return match oc {
+        match oc {
             None => {
                 self.running = false;
-                let mut i: usize = 0;
-                for target in self.targets.iter_mut() {
-                    if target.matching && matches!(target.target.get(self.index), None) {
-                        self.found = Some(i)
+                for (i, target) in self.targets.iter_mut().enumerate() {
+                    if target.matching && target.target.get(self.index).is_none() {
+                        self.found = Some(i);
                     }
-                    i += 1
                 }
                 self.generate_exact_token()
             }
             Some(c) => {
                 self.running = false;
-                let mut i: usize = 0;
-                for target in self.targets.iter_mut() {
+                for (i, target) in self.targets.iter_mut().enumerate() {
                     if target.matching {
                         match target.target.get(self.index) {
-                            None => {
-                                target.matching = false;
-                                if self.index > 0 {
-                                    self.found = Some(i);
-                                }
+                            Some(&m) if m == c => {
+                                self.running = true;
                             }
-                            Some(m) => {
-                                if *m == c {
-                                    self.running = true;
-                                } else {
-                                    target.matching = false;
+                            Some(_) | None => {
+                                target.matching = false;
+                                if target.target.get(self.index).is_none() && self.index > 0 {
+                                    self.found = Some(i);
                                 }
                             }
                         }
                     }
-                    i += 1;
                 }
                 self.index += 1;
                 if !self.running {
@@ -123,7 +115,7 @@ impl Matcher for ExactMatcher {
                     MatcherResult::Running()
                 }
             }
-        };
+        }
     }
     fn is_running(&self) -> bool {
         self.running

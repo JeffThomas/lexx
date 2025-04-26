@@ -1,4 +1,3 @@
-
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::{Token, TOKEN_TYPE_WORD};
 use std::collections::HashMap;
@@ -64,21 +63,16 @@ impl Matcher for WordMatcher {
         value: &[char],
         _ctx: &mut Box<HashMap<String, i32>>,
     ) -> MatcherResult {
-        return match oc {
-            None => {
+        match oc {
+            Some(c) if c.is_alphabetic() => {
+                self.index += 1;
+                MatcherResult::Running()
+            }
+            _ => {
                 self.running = false;
                 self.generate_word_token(value)
             }
-            Some(c) => {
-                if c.is_alphabetic() {
-                    self.index += 1;
-                    MatcherResult::Running()
-                } else {
-                    self.running = false;
-                    self.generate_word_token(value)
-                }
-            }
-        };
+        }
     }
     fn is_running(&self) -> bool {
         self.running

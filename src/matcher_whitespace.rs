@@ -59,28 +59,23 @@ impl Matcher for WhitespaceMatcher {
         value: &[char],
         _ctx: &mut Box<HashMap<String, i32>>,
     ) -> MatcherResult {
-        return match oc {
-            None => {
+        match oc {
+            Some(c) if c.is_whitespace() => {
+                self.index += 1;
+                self.column += 1;
+                if c == '\r' {
+                    self.column = 1;
+                } else if c == '\n' {
+                    self.column = 1;
+                    self.line += 1;
+                }
+                MatcherResult::Running()
+            }
+            _ => {
                 self.running = false;
                 self.generate_whitspace_token(value)
             }
-            Some(c) => {
-                if c.is_whitespace() {
-                    self.index += 1;
-                    self.column += 1;
-                    if c == '\r' {
-                        self.column = 1;
-                    } else if c == '\n' {
-                        self.column = 1;
-                        self.line += 1;
-                    }
-                    MatcherResult::Running()
-                } else {
-                    self.running = false;
-                    self.generate_whitspace_token(value)
-                }
-            }
-        };
+        }
     }
     fn is_running(&self) -> bool {
         self.running

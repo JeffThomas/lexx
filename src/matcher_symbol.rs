@@ -63,17 +63,13 @@ impl Matcher for SymbolMatcher {
         value: &[char],
         _ctx: &mut Box<HashMap<String, i32>>,
     ) -> MatcherResult {
-        return match oc {
-            None => self.generate_symbol_token(value),
-            Some(c) => {
-                if !c.is_whitespace() && !c.is_alphanumeric() {
-                    self.index += 1;
-                    MatcherResult::Running()
-                } else {
-                    self.generate_symbol_token(value)
-                }
+        match oc {
+            Some(c) if !c.is_whitespace() && !c.is_alphanumeric() => {
+                self.index += 1;
+                MatcherResult::Running()
             }
-        };
+            _ => self.generate_symbol_token(value),
+        }
     }
     fn is_running(&self) -> bool {
         self.running

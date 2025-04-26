@@ -84,22 +84,19 @@ impl Matcher for KeywordMatcher {
         _value: &[char],
         _ctx: &mut Box<HashMap<String, i32>>,
     ) -> MatcherResult {
-        return match oc {
+        match oc {
             None => {
                 self.running = false;
-                let mut i: usize = 0;
-                for target in self.targets.iter_mut() {
-                    if target.matching && matches!(target.target.get(self.index), None) {
+                for (i, target) in self.targets.iter_mut().enumerate() {
+                    if target.matching && target.target.get(self.index).is_none() {
                         self.found = Some(i)
                     }
-                    i += 1
                 }
                 self.generate_keyword_token()
             }
             Some(c) => {
                 self.running = false;
-                let mut i: usize = 0;
-                for target in self.targets.iter_mut() {
+                for (i, target) in self.targets.iter_mut().enumerate() {
                     if target.matching {
                         match target.target.get(self.index) {
                             None => {
@@ -117,7 +114,6 @@ impl Matcher for KeywordMatcher {
                             }
                         }
                     }
-                    i += 1;
                 }
                 self.index += 1;
                 if !self.running {
@@ -126,7 +122,7 @@ impl Matcher for KeywordMatcher {
                     MatcherResult::Running()
                 }
             }
-        };
+        }
     }
     fn is_running(&self) -> bool {
         self.running

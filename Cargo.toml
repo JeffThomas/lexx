@@ -11,3 +11,15 @@ path = "src/lib.rs"
 
 [dependencies]
 arrayvec = "0.7.2"
+
+[dev-dependencies]
+criterion = "0.5"
+rand = "0.8"
+
+[[bench]]
+name = "lexx_bench"
+harness = false
+
+[[bench]]
+name = "rolling_char_buffer_bench"
+harness = false
