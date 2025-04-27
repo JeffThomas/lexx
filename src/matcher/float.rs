@@ -1,10 +1,11 @@
+/// The float matcher matches floating point numbers. To qualify as floating point, the numbers must
+/// start and end with a numeric digit and have a period within them. For example `1.0`. Thus,
+/// `.1` and `1.` do not qualify as floating point numbers.
+
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::{Token, TOKEN_TYPE_FLOAT};
 use std::collections::HashMap;
 
-/// The float matcher matches floating point numbers. To qualify as floating point, the numbers must
-/// start and end with a numeric digit and have a period within them. For example `1.0`. Thus,
-/// `.1` and `1.` do not qualify as floating point numbers.
 ///
 /// # Example
 ///
@@ -12,10 +13,10 @@ use std::collections::HashMap;
 /// use lexx::{Lexx, Lexxer};
 /// use lexx::token::{TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL};
 /// use lexx::input::InputString;
-/// use lexx::matcher_float::FloatMatcher;
-/// use lexx::matcher_symbol::SymbolMatcher;
-/// use lexx::matcher_integer::IntegerMatcher;
-/// use lexx::matcher_whitespace::WhitespaceMatcher;
+/// use lexx::matcher::float::FloatMatcher;
+/// use lexx::matcher::integer::IntegerMatcher;
+/// use lexx::matcher::symbol::SymbolMatcher;
+/// use lexx::matcher::whitespace::WhitespaceMatcher;
 ///
 /// let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
 /// Box::new(InputString::new(String::from("1.0 5 0.012345 .9 00.00 100.0 4."))),

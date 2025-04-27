@@ -1,3 +1,18 @@
+//! The matcher module provides a set of token matchers for the Lexx lexer.
+//!
+//! Each matcher implements the [Matcher] trait and is responsible for recognizing
+//! specific types of tokens in a character stream. The available matchers are:
+//!
+//! - [exact]: Matches exact strings from a provided list.
+//! - [float]: Matches floating-point numbers (e.g., 3.14, 0.001).
+//! - [integer]: Matches integer numbers (e.g., 42, -7).
+//! - [keyword]: Matches specific keywords, ensuring they are not substrings.
+//! - [symbol]: Matches non-alphanumeric, non-whitespace symbols (e.g., @, #, $).
+//! - [whitespace]: Matches whitespace characters (spaces, tabs, newlines).
+//! - [word]: Matches sequences of alphabetic characters (words).
+//!
+//! Each matcher can be used independently or in combination to build a custom lexer.
+
 ///
 /// Trait for token matchers used by [`Lexx`](crate::Lexx).
 ///
@@ -101,3 +116,30 @@ pub trait Matcher: Debug {
     /// Used for resolving same length matches, higher numbers have higher precedence
     fn precedence(&self) -> u8;
 }
+
+/// The `exact` module provides the `ExactMatcher`, which matches strings exactly as specified.
+/// It allows users to define a list of strings to match against, ensuring that only exact matches
+/// are recognized, regardless of their position in the input stream.
+pub mod exact;
+/// The float matcher matches floating point numbers. To qualify as floating point, the numbers must
+/// start and end with a numeric digit and have a period within them. For example `1.0`. Thus,
+/// `.1` and `1.` do not qualify as floating point numbers.
+pub mod float;
+/// The integer matcher matches integer numbers. To qualify as integer the numbers must
+/// start and end with a numeric digit.
+pub mod integer;
+/// The Keyword matcher is very similar to the [ExactMatcher](crate::matcher_exact::ExactMatcher) in that you give it a list of matches
+/// to make, and it looks EXACTLY for those matches. The difference between this matcher and the
+/// [ExactMatcher](crate::matcher_exact::ExactMatcher) is that for `THIS` matcher an exact match must end with a non alpha-numeric
+/// character. For example, if you give this matcher "match" as a keyword it will NOT match
+/// "matches", "matchers" or "match1", "1matcher", "2match" etc.
+/// It will match "match ", " match." "---match---" and so on.
+pub mod keyword;
+/// The SymbolMatcher matches any series of characters that do NOT match `is_whitespace()` or
+/// `c.is_alphanumeric()`. That is, this matcher
+/// will match any character that is not a number, letter, or whitespace.
+pub mod symbol;
+/// The WhitespaceMatcher matches any series of characters that are `is_whitespace()`.
+pub mod whitespace;
+/// The `WordMatcher` is a matcher that matches word tokens in the input stream.
+pub mod word;

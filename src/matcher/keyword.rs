@@ -1,3 +1,10 @@
+/// The Keyword matcher is very similar to the [ExactMatcher](crate::matcher_exact::ExactMatcher) in that you give it a list of matches
+/// to make and it looks EXACTLY for those matches. The difference between this matcher and the
+/// [ExactMatcher](crate::matcher_exact::ExactMatcher) is that for `THIS` matcher an exact match must end with a non alpha-numeric
+/// character. For example if you give this matcher "match" as a keyword it will NOT match
+/// "matches", "matchers" or "match1", "1matcher", "2match" etc.
+/// It will match "match ", " match." "---match---" and so on.
+
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::Token;
 use std::collections::HashMap;
@@ -11,12 +18,6 @@ pub struct Target {
     pub target: Box<Vec<char>>,
 }
 
-/// The Keyword matcher is very similar to the [ExactMatcher](crate::matcher_exact::ExactMatcher) in that you give it a list of matches
-/// to make and it looks EXACTLY for those matches. The difference between this matcher and the
-/// [ExactMatcher](crate::matcher_exact::ExactMatcher) is that for `THIS` matcher an exact match must end with a non alpha-numeric
-/// character. For example if you give this matcher "match" as a keyword it will NOT match
-/// "matches", "matchers" or "match1", "1matcher", "2match" etc.
-/// It will match "match ", " match." "---match---" and so on.
 ///
 /// # Example
 ///
@@ -24,9 +25,9 @@ pub struct Target {
 /// use lexx::{Lexx, Lexxer};
 /// use lexx::token::{TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_KEYWORD, TOKEN_TYPE_WORD};
 /// use lexx::input::InputString;
-/// use lexx::matcher_keyword::KeywordMatcher;
-/// use lexx::matcher_whitespace::WhitespaceMatcher;
-/// use lexx::matcher_word::WordMatcher;
+/// use lexx::matcher::keyword::KeywordMatcher;
+/// use lexx::matcher::whitespace::WhitespaceMatcher;
+/// use lexx::matcher::word::WordMatcher;
 ///
 /// let lexx_input = InputString::new(String::from("matcher matching match dog"));
 ///
@@ -191,11 +192,11 @@ impl KeywordMatcher {
 
 #[cfg(test)]
 mod tests {
-    use crate::matcher_keyword::KeywordMatcher;
-    use crate::matcher_whitespace::WhitespaceMatcher;
     use crate::token::TOKEN_TYPE_KEYWORD;
     use crate::{Lexx, LexxError, Lexxer};
     use crate::input::InputString;
+    use crate::matcher::keyword::KeywordMatcher;
+    use crate::matcher::whitespace::WhitespaceMatcher;
 
     #[test]
     fn matcher_exact_matches_word() {

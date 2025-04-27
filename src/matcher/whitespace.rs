@@ -1,3 +1,9 @@
+/// The `whitespace` module provides the `WhitespaceMatcher`, which matches sequences of whitespace characters in the input stream.
+/// Whitespace characters are those for which Rust’s `char::is_whitespace()` returns true (such as spaces, tabs, and newlines).
+/// The matcher recognizes contiguous runs of whitespace and produces tokens of type `TOKEN_TYPE_WHITESPACE`.
+///
+/// This module is useful for lexers that need to identify and handle whitespace regions, which are often ignored or treated specially in tokenization.
+
 use crate::matcher::{Matcher, MatcherResult};
 pub use crate::token::{Token, TOKEN_TYPE_WHITESPACE};
 use std::collections::HashMap;
@@ -10,8 +16,8 @@ use std::collections::HashMap;
 /// use lexx::{Lexx, Lexxer};
 /// use lexx::token::{TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD};
 /// use lexx::input::InputString;
-/// use lexx::matcher_word::WordMatcher;
-/// use lexx::matcher_whitespace::WhitespaceMatcher;
+/// use lexx::matcher::whitespace::WhitespaceMatcher;
+/// use lexx::matcher::word::WordMatcher;
 ///
 /// let lexx_input = InputString::new(String::from(" a \t\nb \r\n\t c"));
 ///

@@ -11,7 +11,6 @@
 //
 // All types are designed for robust, panic-free operation with clear error propagation.
 //
-
 use crate::LexxError;
 use std::error::Error;
 use std::fmt;
@@ -209,57 +208,44 @@ where
             return Ok(Some(c));
         }
         // Read new bytes into buffer
-        let n: usize;
-        if self.rollover_start == 0 {
-            n = self.reader.read(self.buffer.as_mut()).unwrap();
+        let n: usize = if self.rollover_start == 0 {
+            self.reader.read(self.buffer.as_mut()).unwrap()
         } else {
             // Move rollover bytes to front
             let rollover_len = self.rollover_end - self.rollover_start;
             self.buffer.copy_within(self.rollover_start..self.rollover_end, 0);
             let read_bytes = self.reader.read(&mut self.buffer[rollover_len..]).unwrap();
-            n = read_bytes + rollover_len;
+            let n = read_bytes + rollover_len;
             self.rollover_start = 0;
-        }
+            n
+        };
         if n == 0 {
             return Ok(None);
         }
         self.index = 0;
-        let mut se: &str;
-        {
-            // Handle incomplete UTF-8 at buffer end
-            loop {
-                let mut is_good = true;
-                match from_utf8(&self.buffer[self.index..n]) {
-                    Ok(_) => {
-                        se = unsafe { from_utf8_unchecked(&self.buffer[self.index..n]) };
-                        break;
-                    }
-                    Err(e) => {
-                        let end = e.valid_up_to();
-                        if end == 0 {
-                            // Incomplete UTF-8 at start
-                            is_good = false;
-                        } else {
-                            self.rollover_start = end;
-                            self.rollover_end = n;
-                        }
-                        // SAFETY: Only valid portion
-                        se = unsafe { from_utf8_unchecked(&self.buffer[self.index..n][..end]) };
-                    }
+        // Handle incomplete UTF-8 at buffer end efficiently
+        let valid_up_to = match from_utf8(&self.buffer[..n]) {
+            Ok(_) => n,
+            Err(e) => {
+                let end = e.valid_up_to();
+                if end != n {
+                    self.rollover_start = end;
+                    self.rollover_end = n;
                 }
-                if is_good {
-                    break;
-                }
+                end
             }
-        }
-        self.index += 1;
+        };
+        let se = unsafe { from_utf8_unchecked(&self.buffer[..valid_up_to]) };
         self.size = 0;
-        let cs = se.chars();
-        for c in cs {
+        for c in se.chars() {
             self.text[self.size] = c;
             self.size += 1;
         }
-        Ok(Some(self.text[self.index-1]))
+        if self.size == 0 {
+            return Ok(None);
+        }
+        self.index += 1;
+        Ok(Some(self.text[self.index - 1]))
     }
 }
 
@@ -275,11 +261,11 @@ mod tests {
 
     use crate::{Lexx, Lexxer, LexxError};
     use crate::input::InputReader;
-    use crate::matcher_integer::IntegerMatcher;
-    use crate::matcher_float::FloatMatcher;
-    use crate::matcher_symbol::SymbolMatcher;
-    use crate::matcher_whitespace::WhitespaceMatcher;
-    use crate::matcher_word::WordMatcher;
+    use crate::matcher::float::FloatMatcher;
+    use crate::matcher::integer::IntegerMatcher;
+    use crate::matcher::symbol::SymbolMatcher;
+    use crate::matcher::whitespace::WhitespaceMatcher;
+    use crate::matcher::word::WordMatcher;
     use crate::token::{Token, TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD};
 
     #[test]
@@ -295,7 +281,7 @@ mod tests {
 
         let start = Instant::now();
 
-        let file = File::open("Varney-the-Vampire.txt").unwrap();
+        let file = File::open("./tests/Varney-the-Vampire.txt").unwrap();
 
         let input_file = InputReader::new(file);
 
@@ -356,7 +342,7 @@ mod tests {
 
     #[test]
     fn lexx_parse_utf_file() {
-        let file = File::open("utf-8-sampler.txt").unwrap();
+        let file = File::open("./tests/utf-8-sampler.txt").unwrap();
 
         let input_file = InputReader::new(file);
 

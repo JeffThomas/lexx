@@ -1,3 +1,7 @@
+/// The `exact` module provides the `ExactMatcher`, which matches strings exactly as specified.
+/// It allows users to define a list of strings to match against, ensuring that only exact matches
+/// are recognized, regardless of their position in the input stream.
+
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::Token;
 use std::collections::HashMap;
@@ -19,9 +23,9 @@ pub struct Target {
 /// ```rust
 /// use lexx::{Lexx, Lexxer};
 /// use lexx::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
-/// use lexx::matcher_exact::ExactMatcher;
-/// use lexx::matcher_symbol::SymbolMatcher;
 /// use lexx::input::InputString;
+/// use lexx::matcher::exact::ExactMatcher;
+/// use lexx::matcher::symbol::SymbolMatcher;
 ///
 /// let lexx_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
 ///
@@ -184,11 +188,12 @@ impl ExactMatcher {
 
 #[cfg(test)]
 mod tests {
-    use crate::matcher_exact::ExactMatcher;
-    use crate::matcher_whitespace::WhitespaceMatcher;
     use crate::token::TOKEN_TYPE_EXACT;
     use crate::{Lexx, LexxError, Lexxer};
     use crate::input::InputString;
+    use crate::matcher::exact::ExactMatcher;
+    use crate::matcher::symbol::SymbolMatcher;
+    use crate::matcher::whitespace::WhitespaceMatcher;
 
     #[test]
     fn matcher_exact_matches_word() {
@@ -363,8 +368,6 @@ mod tests {
 
     #[test]
     fn example_test() {
-        use crate::matcher_exact::ExactMatcher;
-        use crate::matcher_symbol::SymbolMatcher;
         use crate::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
         use crate::Lexx;
 

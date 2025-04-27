@@ -1,20 +1,21 @@
+/// The integer matcher matches integer numbers. To qualify as integer the numbers must
+/// start and end with a numeric digit.
+
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::{Token, TOKEN_TYPE_INTEGER};
 use std::collections::HashMap;
 
-/// The integer matcher matches integer numbers. To qualify as integer the numbers must
-/// start and end with a numeric digit.
 ///
 /// # Example
 ///
 /// ```rust
 /// use lexx::{Lexx, Lexxer};
 /// use lexx::token::{TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL};
-/// use lexx::matcher_float::FloatMatcher;
-/// use lexx::matcher_symbol::SymbolMatcher;
-/// use lexx::matcher_integer::IntegerMatcher;
-/// use lexx::matcher_whitespace::WhitespaceMatcher;
 /// use lexx::input::InputString;
+/// use lexx::matcher::float::FloatMatcher;
+/// use lexx::matcher::integer::IntegerMatcher;
+/// use lexx::matcher::symbol::SymbolMatcher;
+/// use lexx::matcher::whitespace::WhitespaceMatcher;
 ///
 /// let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
 /// Box::new(InputString::new(String::from("1.0 5 0.012345 .9 00.00 100.0 4."))),
@@ -106,10 +107,10 @@ impl IntegerMatcher {
 
 #[cfg(test)]
 mod tests {
-    use crate::matcher_integer::IntegerMatcher;
-    use crate::matcher_whitespace::WhitespaceMatcher;
     use crate::{Lexx, LexxError, Lexxer};
     use crate::input::InputString;
+    use crate::matcher::integer::IntegerMatcher;
+    use crate::matcher::whitespace::WhitespaceMatcher;
 
     #[test]
     fn matcher_integer_matches_integer() {

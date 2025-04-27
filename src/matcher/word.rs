@@ -1,10 +1,14 @@
+/// The `word` module provides the `WordMatcher`, which matches word tokens in the input stream.
+/// A word is typically defined as a sequence of alphabetic characters (such as identifiers or keywords).
+/// The matcher recognizes words and produces tokens of type `TOKEN_TYPE_WORD`.
+///
+/// This module is useful for lexers that need to identify and extract words or identifiers from text.
+
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::{Token, TOKEN_TYPE_WORD};
 use std::collections::HashMap;
 
-/// The SymbolMatcher matches any series of characters that do NOT match `is_whitespace()` or
-/// `c.is_alphanumeric()`. That is, any character that is not a number, letter or whitespace
-/// will be matched by this matcher.
+/// The `WordMatcher` is a matcher that matches word tokens in the input stream.
 ///
 /// # Example
 ///
@@ -12,8 +16,8 @@ use std::collections::HashMap;
 /// use lexx::{Lexx, Lexxer};
 /// use lexx::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
 /// use lexx::input::InputString;
-/// use lexx::matcher_exact::ExactMatcher;
-/// use lexx::matcher_symbol::SymbolMatcher;
+/// use lexx::matcher::exact::ExactMatcher;
+/// use lexx::matcher::symbol::SymbolMatcher;
 ///
 /// let lexx_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
 ///
@@ -102,11 +106,11 @@ impl WordMatcher {
 
 #[cfg(test)]
 mod tests {
-    use crate::matcher_whitespace::WhitespaceMatcher;
-    use crate::matcher_word::WordMatcher;
     use crate::token::TOKEN_TYPE_WORD;
     use crate::{Lexx, LexxError, Lexxer};
     use crate::input::InputString;
+    use crate::matcher::whitespace::WhitespaceMatcher;
+    use crate::matcher::word::WordMatcher;
 
     #[test]
     fn matcher_word_matches_word() {

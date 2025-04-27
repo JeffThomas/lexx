@@ -1,18 +1,18 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use lexx::input::InputString;
-use lexx::matcher_exact::ExactMatcher;
-use lexx::matcher_keyword::KeywordMatcher;
-use lexx::matcher_word::WordMatcher;
-use lexx::matcher_whitespace::WhitespaceMatcher;
-use lexx::matcher_symbol::SymbolMatcher;
-use lexx::matcher_float::FloatMatcher;
-use lexx::matcher_integer::IntegerMatcher;
 use lexx::{Lexx, Lexxer};
 use rand::{Rng, SeedableRng};
 use rand::rngs::StdRng;
+use lexx::matcher::exact::ExactMatcher;
+use lexx::matcher::float::FloatMatcher;
+use lexx::matcher::integer::IntegerMatcher;
+use lexx::matcher::keyword::KeywordMatcher;
+use lexx::matcher::symbol::SymbolMatcher;
+use lexx::matcher::whitespace::WhitespaceMatcher;
+use lexx::matcher::word::WordMatcher;
 
 fn bench_lexx_tokenization(c: &mut Criterion) {
-    let input = std::fs::read_to_string("utf-8-sampler.txt").unwrap();
+    let input = std::fs::read_to_string("./tests/utf-8-sampler.txt").unwrap();
     c.bench_function("lexx_tokenization_utf8_sampler", |b| {
         b.iter(|| {
             let lexx_input = InputString::new(input.clone());
@@ -36,7 +36,7 @@ fn bench_lexx_tokenization(c: &mut Criterion) {
 }
 
 fn bench_lexx_small_file(c: &mut Criterion) {
-    let input = std::fs::read_to_string("small_file.txt").unwrap();
+    let input = std::fs::read_to_string("./tests/small_file.txt").unwrap();
     c.bench_function("lexx_tokenization_small_file", |b| {
         b.iter(|| {
             let lexx_input = InputString::new(input.clone());
@@ -113,7 +113,7 @@ fn bench_lexx_random_input(c: &mut Criterion) {
 }
 
 fn bench_lexx_varney_file(c: &mut Criterion) {
-    let input = std::fs::read_to_string("Varney-the-Vampire.txt").expect("Varney file missing");
+    let input = std::fs::read_to_string("./tests/Varney-the-Vampire.txt").expect("Varney file missing");
     c.bench_function("lexx_tokenization_varney_vampire_txt", |b| {
         b.iter(|| {
             let lexx_input = InputString::new(input.clone());

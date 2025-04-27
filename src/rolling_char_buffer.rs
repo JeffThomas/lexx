@@ -1,3 +1,32 @@
+//! # RollingCharBuffer
+//!
+//! A high-performance, fixed-size circular buffer for `char` values, supporting both FIFO (queue) and LIFO (stack) operations.
+//!
+//! This structure is designed for use in lexers, tokenizers, and other performance-critical text processing applications where rapid, bounded buffering of characters is required with minimal allocations.
+//!
+//! ## Features
+//! - Constant-time push, pop, prefix, and read operations.
+//! - Supports both stack-like (LIFO) and queue-like (FIFO) access patterns.
+//! - Efficiently handles buffer wrap-around (circular/ring buffer design).
+//! - Fixed capacity: no dynamic allocation or resizing after creation.
+//! - Graceful error handling when buffer is full or empty.
+//!
+//! ## Performance
+//! - All operations are O(1) and require no heap allocations after initialization.
+//! - Suitable for high-throughput scenarios such as streaming tokenization or incremental parsing.
+//!
+//! ## Example Usage
+//! ```rust
+//! use lexx::rolling_char_buffer::{RollingCharBuffer, RollingCharBufferError};
+//! let mut buffer = RollingCharBuffer::<8>::new();
+//! buffer.push('x').unwrap();
+//! buffer.prefix('y').unwrap();
+//! assert_eq!(buffer.read().unwrap(), 'y');
+//! assert_eq!(buffer.pop().unwrap(), 'x');
+//! ```
+//!
+//! See method documentation and examples for more details.
+
 use std::fmt;
 
 /// RollingCharBuffer errors
@@ -28,6 +57,7 @@ impl fmt::Display for RollingCharBufferError {
 /// * [read](RollingCharBuffer::read) returns and removes the [char] from the front of the buffer
 /// * [extend](RollingCharBuffer::extend) adds a [vec]<[char]> to the end of the buffer
 /// * [prepend](RollingCharBuffer::prepend) adds a [vec]<[char]> to the front of the buffer
+/// * [clear](RollingCharBuffer::clear) clears the buffer
 ///
 /// # Example
 ///
@@ -325,7 +355,8 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// assert_eq!(buffer.push('a'), Ok(())); // buffer is now ['a']
     /// assert_eq!(buffer.prepend(&vec!['b', 'c', 'd']), Ok(1)); // buffer is now ['b', 'c', 'd', 'a']
     /// assert!(matches!(buffer.pop(), Ok(c) if c == 'a')); // buffer is now ['b', 'c', 'd']
-    /// assert!(matches!(buffer.pop(), Ok(c) if c == 'd')); // buffer is now ['b', 'c']
+    /// assert!(matches!
+    /// (buffer.pop(), Ok(c) if c == 'd')); // buffer is now ['b', 'c']
     /// ```
     ///
     pub fn prepend(&mut self, cs: &[char]) -> Result<usize, RollingCharBufferError> {

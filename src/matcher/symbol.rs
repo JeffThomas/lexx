@@ -1,19 +1,23 @@
+/// The `symbol` module provides the `SymbolMatcher`, which matches symbol tokens in the input stream.
+/// Symbols are typically non-alphanumeric characters (such as punctuation or operators) that are not part of words or numbers.
+/// The matcher recognizes contiguous runs of symbol characters and produces tokens of type `TOKEN_TYPE_SYMBOL`.
+///
+/// This module is useful for lexers that need to identify and extract symbols (e.g., operators, punctuation) from text.
+
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::{Token, TOKEN_TYPE_SYMBOL};
 use std::collections::HashMap;
 
-/// The SymbolMatcher matches any series of characters that do NOT match `is_whitespace()` or
-/// `c.is_alphanumeric()`. That is, any character that is not a number, letter or whitespace
-/// will be matched by this matcher.
+/// The `SymbolMatcher` is a matcher that matches symbol tokens in the input stream.
 ///
 /// # Example
 ///
 /// ```rust
 /// use lexx::{Lexx, Lexxer};
 /// use lexx::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
-/// use lexx::matcher_exact::ExactMatcher;
-/// use lexx::matcher_symbol::SymbolMatcher;
 /// use lexx::input::InputString;
+/// use lexx::matcher::exact::ExactMatcher;
+/// use lexx::matcher::symbol::SymbolMatcher;
 ///
 /// let lexx_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
 ///
