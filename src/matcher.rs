@@ -3,13 +3,13 @@
 //! Each matcher implements the [Matcher] trait and is responsible for recognizing
 //! specific types of tokens in a character stream. The available matchers are:
 //!
-//! - [exact]: Matches exact strings from a provided list.
-//! - [float]: Matches floating-point numbers (e.g., 3.14, 0.001).
-//! - [integer]: Matches integer numbers (e.g., 42, -7).
-//! - [keyword]: Matches specific keywords, ensuring they are not substrings.
-//! - [symbol]: Matches non-alphanumeric, non-whitespace symbols (e.g., @, #, $).
-//! - [whitespace]: Matches whitespace characters (spaces, tabs, newlines).
-//! - [word]: Matches sequences of alphabetic characters (words).
+//! - [ExactMatcher](matcher::exact::ExactMatcher): Matches exact strings from a provided list.
+//! - [FloatMatcher](matcher::float::FloatMatcher): Matches floating-point numbers (e.g., 3.14, 0.001).
+//! - [IntegerMatcher](matcher::integer::IntegerMatcher): Matches integer numbers (e.g., 42, -7).
+//! - [KeywordMatcher](matcher::keyword::KeywordMatcher): Matches specific keywords, ensuring they are not substrings.
+//! - [SymbolMatcher](matcher::symbol::SymbolMatcher): Matches non-alphanumeric, non-whitespace symbols (e.g., @, #, $).
+//! - [WhitespaceMatcher](matcher::whitespace::WhitespaceMatcher): Matches whitespace characters (spaces, tabs, newlines).
+//! - [WordMatcher](matcher::word::WordMatcher): Matches sequences of alphabetic characters (words).
 //!
 //! Each matcher can be used independently or in combination to build a custom lexer.
 
@@ -89,7 +89,7 @@ pub enum MatcherResult {
     Matched(Token),
 }
 
-/// All matcher types must also implement [`Debug`](Debug),
+/// All matcher types must also implement [`Debug`],
 /// which allows for easy inspection and debugging of matcher state.
 /// This is especially useful when writing tests or diagnosing matcher behavior
 /// during tokenization.
@@ -97,14 +97,14 @@ pub trait Matcher: Debug {
     /// Puts the matcher in a starting state to beging accepting [char]s
     fn reset(&mut self, ctx: &mut Box<HashMap<String, i32>>);
     /// The function that does all the work, it is called repeatedly
-    /// with new [Option<char>] values until it returns a [MatcherResult::Matched] or
+    /// with new [`Option<char>`] values until it returns a [MatcherResult::Matched] or
     /// [MatcherResult::Failed].
-    /// * `oc` - The current [Option<char>] to match against. An [None] input indicates
+    /// * `oc` - The current [`Option<char>`] to match against. An [None] input indicates
     /// the end of input, giving the matcher a chance to match what it's already seen or not. For
-    /// example `1234[EOF]` is a valid integer for the [IntegerMatcher](crate::matcher_integer::IntegerMatcher)
+    /// example `1234[EOF]` is a valid integer for the [IntegerMatcher](integer::IntegerMatcher)
     /// * `value` - Is an array of [char] characters that have already been sent to the [Matcher],
     /// so that the [Matcher]s don't have to keep their own history. [Matcher]s can use this to make
-    /// the [String] value for their [Token](Token) if they find a match.
+    /// the [String] value for their [Token] if they find a match.
     fn find_match(
         &mut self,
         oc: Option<char>,
@@ -128,9 +128,9 @@ pub mod float;
 /// The integer matcher matches integer numbers. To qualify as integer the numbers must
 /// start and end with a numeric digit.
 pub mod integer;
-/// The Keyword matcher is very similar to the [ExactMatcher](crate::matcher_exact::ExactMatcher) in that you give it a list of matches
+/// The Keyword matcher is very similar to the [ExactMatcher](exact::ExactMatcher), in that you give it a list of matches
 /// to make, and it looks EXACTLY for those matches. The difference between this matcher and the
-/// [ExactMatcher](crate::matcher_exact::ExactMatcher) is that for `THIS` matcher an exact match must end with a non alpha-numeric
+/// [ExactMatcher](exact::ExactMatcher) is that for `THIS` matcher an exact match must end with a non alpha-numeric
 /// character. For example, if you give this matcher "match" as a keyword it will NOT match
 /// "matches", "matchers" or "match1", "1matcher", "2match" etc.
 /// It will match "match ", " match." "---match---" and so on.

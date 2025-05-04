@@ -329,6 +329,7 @@ mod tests {
         }
 
         let duration = start.elapsed();
+        println!("Time elapsed is: {:?}", duration);
         assert_eq!(743524, total);
         assert_eq!(124, integers);
         assert_eq!(1, floats);
@@ -337,7 +338,6 @@ mod tests {
         assert_eq!(338909, words);
         assert_eq!(13267, unique_words.len());
         assert_eq!(43680, lines);
-        println!("Time elapsed is: {:?}", duration);
     }
 
     #[test]

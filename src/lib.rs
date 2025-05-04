@@ -12,18 +12,18 @@
 //! Token{ token_type: 4, value: "thing".to_string(), line: 2, column: 5, len: 5, precedence: 0};
 //! Token{ token_type: 5, value: ".".to_string(), line: 2, column: 10, len: 1, precedence: 0};
 //! ```
-//! Lexx uses a [`LexxInput`](LexxInput) to provide chars that are fed to
-//! [`Matcher`](Matcher) instances until the longest match is found, if any. The
-//! match will be returned as a [`Token`](Token) instance. The
-//! [`Token`](Token) includes a type and the string matched as well as the
-//! line and column where the match was made. A custom [`LexxInput`](LexxInput)
+//! Lexx uses a [`LexxInput`] to provide chars that are fed to
+//! [`Matcher`] instances until the longest match is found, if any. The
+//! match will be returned as a [`Token`] instance. The
+//! [`Token`] includes a type and the string matched as well as the
+//! line and column where the match was made. A custom [`LexxInput`]
 //! can be passed to Lexx but the library comes with implementations for
 //! [`InputString`](input::InputString) and
 //! [`InputReader`](input::InputReader) types.
 //!
 //! Lexx implements [`Iterator`] so it can be used with `for` loops.
 //!
-//! Custom [`Matcher`](Matcher)s can also be made though Lexx comes with:
+//! Custom [`Matcher`]s can also be made though Lexx comes with:
 //! - [`WordMatcher`](matcher::word::WordMatcher) matches alphabetic characters such as `ABCdef` and `word`
 //! - [`IntegerMatcher`](matcher::integer::IntegerMatcher) matches integers such as `3` or `14537`
 //! - [`FloatMatcher`](matcher::float::FloatMatcher) matches floats such as `434.312` or `0.001`
@@ -39,7 +39,7 @@
 //!   will not match substrings, such as the `new` in `renewable` or `newfangled`.
 //! - [`WhitespaceMatcher`](matcher::whitespace::WhitespaceMatcher) matches whitespace such as `  ` or `\t\r\n`
 //!
-//! [`Matcher`](Matcher)s can be given a precedence that can make a matcher return its
+//! [`Matcher`]s can be given a precedence that can make a matcher return its
 //! results even if another matcher has a longer match. For example, both the [`WordMatcher`](matcher::word::WordMatcher)
 //! and [`KeywordMatcher`](matcher::keyword::KeywordMatcher) are used at the same time.
 //!
@@ -119,9 +119,9 @@
     unused_qualifications
 )]
 
-/// The [Input](LexxInput) for lexx
+/// The [LexxInput] for lexx
 pub mod input;
-/// The [Matcher](Matcher) trait for lexx
+/// The [Matcher] trait for lexx
 pub mod matcher;
 /// The results of a match
 pub mod token;
@@ -174,13 +174,13 @@ impl Error for LexxError {
     }
 }
 
-/// The lexer itself. Implements [Lexxer](crate::Lexxer) so you can use `Box<dyn Lexxer>` and don't
+/// The lexer itself. Implements [Lexxer] so you can use `Box<dyn Lexxer>` and don't
 /// have to define the `CAP` in var declarations.
 ///
 /// # Overview
 ///
 /// `Lexx` is a fast, extensible, greedy, single-pass text tokenizer. It works by passing input characters
-/// from a [`LexxInput`](crate::input::LexxInput) to a set of [`Matcher`](crate::matcher::Matcher) instances.
+/// from a [`LexxInput`] to a set of [`Matcher`] instances.
 /// Each matcher attempts to find the longest valid token at the current position. The matchers can be
 /// prioritized using precedence, allowing for flexible tokenization strategies (e.g., keywords vs. words).
 ///
@@ -234,9 +234,9 @@ impl<const CAP: usize> Lexx<CAP> {
     ///
     /// # Arguments
     ///
-    /// * `input` - An instance of [LexxInput](crate::input::LexxInput) that provides
+    /// * `input` - An instance of [LexxInput] that provides
     /// the char stream that will be lexed.
-    /// * `matchers` - a [vec] of [Matcher](crate::matcher::Matcher)s that will be used to
+    /// * `matchers` - a [vec] of [Matcher]s that will be used to
     /// generate Tokens.
     ///
     /// # Examples
@@ -339,13 +339,13 @@ impl<const CAP: usize> Lexx<CAP> {
 }
 impl<const CAP: usize> Lexxer for Lexx<CAP> {
     ///
-    /// Returns the next [Result<Option<Token>, LexxError>](Result).
+    /// Returns the next `[Result<Option<Token>, LexxError>](Result)`.
     ///
-    /// The [Option] will be `None` if there is no remaining input (EOF)
+    /// The `[Option]` will be `None` if there is no remaining input (EOF)
     ///
     /// # Examples
     ///
-    /// See [lexx](crate)
+    /// See `[lexx](crate)`
     ///
     fn next_token(&mut self) -> Result<Option<Token>, LexxError> {
         if self.lexx_result.is_some() {
@@ -357,12 +357,12 @@ impl<const CAP: usize> Lexxer for Lexx<CAP> {
     }
 
     ///
-    /// Returns the next [Result<Option<Token>, LexxError>](Result). However the next call to [Lexx::next_token]
-    /// will return a clone of the same [Result<Option<Token>, LexxError>](Result). Likewise [Lexx::look_ahead]
-    /// can be called repeatedly to get a copy of the same [Result<Option<Token>, LexxError>](Result).
+    /// Returns the next `[Result<Option<Token>, LexxError>](Result)`. However the next call to `[Lexx::next_token]`
+    /// will return a clone of the same `[Result<Option<Token>, LexxError>](Result)`. Likewise `[Lexx::look_ahead]`
+    /// can be called repeatedly to get a copy of the same `[Result<Option<Token>, LexxError>](Result)`.
     ///
-    /// * `Matched` - The next [Token](Token) found in the input.
-    /// * `EndOfInput` - No more chars in the given [LexxInput](LexxInput).
+    /// * `Matched` - The next `[Token](Token)` found in the input.
+    /// * `EndOfInput` - No more chars in the given `[LexxInput](LexxInput)`.
     /// * `Failed` - Something went wrong or no match could be made.
     ///
     /// # Examples
@@ -436,7 +436,7 @@ impl<const CAP: usize> Lexxer for Lexx<CAP> {
     /// If you're done tokenizing something you can tokenize something else with
     /// all the same matchers without having to make a new Lexx.
     ///
-    /// * `input` - An instance of [LexxInput](crate::input::LexxInput) that provides the char stream that will be lexed.
+    /// * `input` - An instance of `[LexxInput](LexxInput)` that provides the char stream that will be lexed.
     ///
     fn set_input(&mut self, input: Box<dyn LexxInput>) {
         self.input = input;
@@ -447,11 +447,11 @@ impl<const CAP: usize> Lexxer for Lexx<CAP> {
     }
 }
 
-/// A trait for [Lexx](crate::Lexx), so you can use `Box<dyn Lexxer>` and don't have to define the
+/// A trait for [Lexx], so you can use `Box<dyn Lexxer>` and don't have to define the
 /// `CAP` in var declarations.
 pub trait Lexxer {
     ///
-    /// Returns the next [Result<Option<Token>, LexxError>](Result).
+    /// Returns the next `[Result<Option<Token>, LexxError>](Result)`.
     ///
     /// The [Option] will be `None` if there is no remaining input (EOF)
     ///
@@ -463,11 +463,11 @@ pub trait Lexxer {
 
     ///
     /// Returns the next `[Result<Option<Token>, LexxError>](Result)`. However, the next call to [Lexx::next_token]
-    /// will return a clone of the same [Result<Option<Token>, LexxError>](Result). Likewise, [Lexx::look_ahead]
-    /// can be called repeatedly to get a copy of the same [Result<Option<Token>, LexxError>](Result).
+    /// will return a clone of the same `[Result<Option<Token>, LexxError>](Result)`. Likewise, [Lexx::look_ahead]
+    /// can be called repeatedly to get a copy of the same `[Result<Option<Token>, LexxError>](Result)`.
     ///
-    /// * `Matched` - The next [Token](crate::token::Token) found in the input.
-    /// * `EndOfInput` - No more chars in the given [LexxInput](crate::input::LexxInput).
+    /// * `Matched` - The next `[Token](Token)` found in the input.
+    /// * `EndOfInput` - No more chars in the given `[LexxInput](LexxInput)`.
     /// * `Failed` - Something went wrong, or no match could be made.
     ///
     /// # Examples
@@ -523,7 +523,7 @@ pub trait Lexxer {
     /// If you're done tokenizing something you can tokenize something else with
     /// all the same matchers without having to make a new Lexx.
     ///
-    /// * `input` - An instance of [LexxInput](crate::input::LexxInput) that provides the char stream that will be lexed.
+    /// * `input` - An instance of `[LexxInput](LexxInput)` that provides the char stream that will be lexed.
     ///
     fn set_input(&mut self, input: Box<dyn LexxInput>);
 }

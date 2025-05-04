@@ -136,11 +136,36 @@ fn bench_lexx_varney_file(c: &mut Criterion) {
     });
 }
 
+fn bench_lexx_large_file(c: &mut Criterion) {
+    let input = std::fs::read_to_string("./tests/large_file.txt").expect("large file missing");
+    c.bench_function("lexx_tokenization_large_file_txt", |b| {
+        b.iter(|| {
+            let lexx_input = InputString::new(input.clone());
+            let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<4096>::new(
+                Box::new(lexx_input),
+                vec![
+                    Box::new(KeywordMatcher::build_matcher_keyword(vec!["let", "fn", "if", "else", "match", "for", "in", "while", "return"], 20, 2)),
+                    Box::new(ExactMatcher::build_exact_matcher(vec!["==", "!=", "<=", ">=", "&&", "||", "=>", "->", "::"], 10, 1)),
+                    Box::new(FloatMatcher { index: 0, precedence: 0, dot: false, float: false, running: true }),
+                    Box::new(IntegerMatcher { index: 0, precedence: 0, running: true }),
+                    Box::new(SymbolMatcher { index: 0, precedence: 0, running: true }),
+                    Box::new(WordMatcher { index: 0, precedence: 0, running: true }),
+                    Box::new(WhitespaceMatcher { index: 0, column: 0, line: 0, precedence: 0, running: true }),
+                ]
+            ));
+            while let Ok(Some(_t)) = lexx.next_token() {
+                // consume token
+            }
+        })
+    });
+}
+
 criterion_group!(benches,
     bench_lexx_tokenization,
     bench_lexx_small_file,
     bench_lexx_stress_test,
     bench_lexx_random_input,
     bench_lexx_varney_file,
+    bench_lexx_large_file,
 );
 criterion_main!(benches);

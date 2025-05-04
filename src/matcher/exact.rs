@@ -54,7 +54,7 @@ pub struct Target {
 /// assert!(matches!(lexx.next_token(), Ok(None)));
 /// ```
 #[derive(Clone, Debug)]
-pub struct ExactMatcher {
+    pub struct ExactMatcher {
     /// Current size of the ongoing match.
     pub index: usize,
     /// This matchers precedence.
