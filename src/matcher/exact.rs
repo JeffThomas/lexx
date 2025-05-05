@@ -212,10 +212,10 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
@@ -223,7 +223,7 @@ mod tests {
                 assert_eq!(t.token_type, TOKEN_TYPE_EXACT)
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }
@@ -261,10 +261,10 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
@@ -273,7 +273,7 @@ mod tests {
                 assert_eq!(t.column, 21);
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }
@@ -322,10 +322,10 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
@@ -334,7 +334,7 @@ mod tests {
                 assert_eq!(t.column, 42);
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }
@@ -353,10 +353,10 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
@@ -364,7 +364,7 @@ mod tests {
                 assert_eq!(t.token_type, TOKEN_TYPE_EXACT)
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }

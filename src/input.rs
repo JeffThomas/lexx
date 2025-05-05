@@ -312,16 +312,16 @@ mod tests {
                             *count += 1;
                         }
                         _ => {
-                            assert!(false, "Don't know what this is!")
+                            unreachable!("Don't know what this is!")
                         }
                     }
                 }
                 Err(e) => match e {
                     LexxError::TokenNotFound(_) => {
-                        assert!(false, "Should not have failed finding a token file");
+                        unreachable!("Should not have failed finding a token file");
                     }
                     LexxError::Error(_) => {
-                        assert!(false, "Should not have failed parsing file");
+                        unreachable!("Should not have failed parsing file");
                     }
                 },
                 Ok(None) => break,
