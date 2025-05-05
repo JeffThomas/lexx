@@ -26,20 +26,30 @@ jobs:
           sudo apt-get install -y gnuplot
       
       - name: Run benchmarks
-        run: cargo bench -- --output-format bencher | tee benchmark-results.txt
+        run: cargo bench | tee benchmark-results.txt
       
-      - name: Store benchmark result
-        uses: benchmark-action/github-action-benchmark@v1
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v3
         with:
-          name: Rust Benchmark
-          tool: 'cargo'
-          output-file-path: benchmark-results.txt
-          # Publish to GitHub Pages
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          auto-push: true
-          # Show alert with commit comment on detecting possible regression
-          alert-threshold: '200%'
-          comment-on-alert: true
-          fail-on-alert: true
-          # Enable alert commit comment
-          alert-comment-cc-users: '@${{ github.actor }}'
+          name: benchmark-results
+          path: target/criterion/
+          
+      - name: Create benchmark summary
+        run: |
+          echo "# Benchmark Results" > benchmark-summary.md
+          echo "## Latest Run" >> benchmark-summary.md
+          echo "Run on $(date)" >> benchmark-summary.md
+          echo "" >> benchmark-summary.md
+          echo "| Benchmark | Time |" >> benchmark-summary.md
+          echo "|-----------|------|" >> benchmark-summary.md
+          grep "time:" benchmark-results.txt | while read -r line; do
+            benchmark=$(echo "$line" | sed -r 's/^([^:]+):.*/\1/')
+            time=$(echo "$line" | sed -r 's/.*time:.*\[([^]]+)\].*/\1/')
+            echo "| $benchmark | $time |" >> benchmark-summary.md
+          done
+      
+      - name: Upload benchmark summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-summary
+          path: benchmark-summary.md
