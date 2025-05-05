@@ -88,7 +88,7 @@ fn bench_lexx_random_input(c: &mut Criterion) {
     let mut rng = StdRng::seed_from_u64(42);
     let charset: Vec<char> = (32u8..127u8).map(|b| b as char).collect();
     let input: String = (0..5_000_000)
-        .map(|_| charset[rng.gen_range(0..charset.len())])
+        .map(|_| charset[rng.random_range(0..charset.len())])
         .collect();
     c.bench_function("lexx_random_input_5M_ascii", |b| {
         b.iter(|| {
@@ -137,7 +137,7 @@ fn bench_lexx_varney_file(c: &mut Criterion) {
 }
 
 fn bench_lexx_large_file(c: &mut Criterion) {
-    let input = std::fs::read_to_string("./tests/large_file.txt").expect("large file missing");
+    let input = std::fs::read_to_string("./tests/Varney-the-Vampire.txt").expect("large file missing");
     c.bench_function("lexx_tokenization_large_file_txt", |b| {
         b.iter(|| {
             let lexx_input = InputString::new(input.clone());

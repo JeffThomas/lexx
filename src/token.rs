@@ -1,3 +1,4 @@
+
 // Token types. These are not an enum so that they can be externally extended
 /// Token type Integer
 pub const TOKEN_TYPE_INTEGER: u16 = 1;
@@ -13,6 +14,7 @@ pub const TOKEN_TYPE_SYMBOL: u16 = 5;
 pub const TOKEN_TYPE_EXACT: u16 = 6;
 /// Token type Keyword
 pub const TOKEN_TYPE_KEYWORD: u16 = 7;
+use std::fmt;
 
 /// The result of a successful match.
 #[derive(Eq, Debug)]
@@ -22,13 +24,13 @@ pub struct Token {
     /// The type of token that was matched. This is intentionally not an enum to allow users of the
     /// library to extend it as needed.
     pub token_type: u16,
-    /// The length of the found [Token] in [char]s (so we don't have to do `.chars().count()`).
+    /// The length of the found [`Token`] in [`char`]s (so we don't have to do `.chars().count()`).
     pub len: usize,
-    /// The line in the total input source the [Token] was found on.
+    /// The line in the total input source the [`Token`] was found on.
     pub line: usize,
-    /// The column in the total input source the [Token] was found at.
+    /// The column in the total input source the [`Token`] was found at.
     pub column: usize,
-    /// The precedence of the [Matcher](crate::matcher::Matcher) that made this match.
+    /// The precedence of the [`Matcher`](crate::matcher::Matcher) that made this match.
     pub precedence: u8,
 }
 
@@ -53,5 +55,12 @@ impl Clone for Token {
             column: self.column,
             precedence: self.precedence,
         }
+    }
+}
+
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Token({}, '{}', ln:{}, col:{})",
+               self.token_type, self.value, self.line, self.column)
     }
 }

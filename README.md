@@ -1,21 +1,129 @@
-# Lexx
+# lexx
 
-Lexx is a fast, extensible, greedy, single-pass text tokenizer written in Rust.
+A fast, extensible, greedy, single-pass text tokenizer implemented in Rust. It uses ArrayVec for more efficient memory management.
 
-## Sample Output
+## Overview
 
-For the string `"This is  \n1.0 thing."`:
-```rust
-use lexx::token::Token;
-Token { token_type: 4, value: "This".to_string(), line: 1, column: 1, len: 4, precedence: 0 }
-Token { token_type: 3, value: " ".to_string(), line: 1, column: 5, len: 1, precedence: 0 }
-Token { token_type: 4, value: "is".to_string(), line: 1, column: 6, len: 2, precedence: 0 }
-Token { token_type: 3, value: "  \n".to_string(), line: 1, column: 8, len: 3, precedence: 0 }
-Token { token_type: 2, value: "1.0".to_string(), line: 2, column: 1, len: 3, precedence: 0 }
-Token { token_type: 3, value: " ".to_string(), line: 2, column: 4, len: 1, precedence: 0 }
-Token { token_type: 4, value: "thing".to_string(), line: 2, column: 5, len: 5, precedence: 0 }
-Token { token_type: 5, value: ".".to_string(), line: 2, column: 10, len: 1, precedence: 0 }
+`lexx` is a fast and flexible tokenizer library that allows you to define and compose various token matching strategies. The library is designed to be easy to use while maintaining high performance.
+
+## Features
+
+- Single-pass tokenization
+- No memory allocation during tokenization
+- Composable matcher system
+- Helper methods for token inspection
+- Factory functions for common tokenizer configurations
+- Builder pattern for easy setup
+
+## Usage
+
+Add `lexx` to your `Cargo.toml`:
+
+```toml
+[dependencies]
+lexx = "0.1.0"
 ```
+
+### Basic Example
+
+```rust
+use lexx::{factories, Lexxer};
+use lexx::token::{TOKEN_TYPE_WORD, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_SYMBOL};
+
+// Create a tokenizer for a code-like syntax
+let mut lexer = factories::tokenize_code("if (x > 3.14) { return true; }");
+
+// Iterate through tokens
+for token_result in lexer {
+    match token_result {
+        Ok(Some(token)) => {
+            println!("Token: {}, Type: {}, Line: {}, Column: {}", 
+                      token.value, token.token_type, token.line, token.column);
+        },
+        Ok(None) => println!("End of input"),
+        Err(e) => println!("Error: {:?}", e),
+    }
+}
+```
+
+### Using Token Helper Methods
+
+```rust
+use lexx::{factories, Lexxer};
+
+let mut lexer = factories::tokenize_str("Hello 42 world!");
+
+while let Ok(Some(token)) = lexer.next_token() {
+    if token.is_word() {
+        println!("Found word: {}", token.value);
+    } else if token.is_integer() {
+        println!("Found number: {}", token.value);
+    } else if token.is_whitespace() {
+        println!("Found whitespace");
+    }
+}
+```
+
+### Custom Tokenizer with Builder Pattern
+
+```rust
+use lexx::{Lexx, Lexxer, input::InputString};
+use lexx::matcher::word::WordMatcher;
+use lexx::matcher::whitespace::WhitespaceMatcher;
+use lexx::matcher::symbol::SymbolMatcher;
+use lexx::matcher::exact::ExactMatcher;
+use lexx::token::TOKEN_TYPE_KEYWORD;
+
+let input = InputString::new("let x = 10;".to_string());
+let mut lexer = Lexx::<512>::new(Box::new(input), vec![])
+    .with_matcher(Box::new(WhitespaceMatcher::new()))
+    .with_matcher(Box::new(WordMatcher::new()))
+    .with_matcher(Box::new(SymbolMatcher::new()))
+    .with_matcher(Box::new(ExactMatcher::new("let", TOKEN_TYPE_KEYWORD)));
+
+// Use the lexer...
+```
+
+### Collecting Tokens
+
+```rust
+use lexx::{factories, Lexxer};
+use lexx::token::TOKEN_TYPE_SYMBOL;
+
+let mut lexer = factories::tokenize_code("let x = 10; let y = 20;");
+
+// Collect tokens until semicolon
+match lexer.collect_until(TOKEN_TYPE_SYMBOL) {
+    Ok(tokens) => {
+        println!("First statement has {} tokens", tokens.len());
+        
+        // The semicolon is still in the stream
+        if let Ok(Some(token)) = lexer.next_token() {
+            println!("Found delimiter: {}", token.value);
+        }
+    },
+    Err(e) => println!("Error: {:?}", e),
+}
+```
+
+## Token Types
+
+The library defines several token types:
+- `TOKEN_TYPE_WHITESPACE` - Whitespace characters
+- `TOKEN_TYPE_WORD` - Word tokens (a-z, A-Z, _)
+- `TOKEN_TYPE_INTEGER` - Integer numbers
+- `TOKEN_TYPE_FLOAT` - Floating point numbers
+- `TOKEN_TYPE_SYMBOL` - Symbol characters
+- `TOKEN_TYPE_KEYWORD` - Reserved keywords
+- `TOKEN_TYPE_EXACT` - Exact string matches
+
+## Documentation
+
+For more detailed documentation, see the [API documentation](https://docs.rs/lexx).
+
+## License
+
+MIT License
 
 ## Structure
 
@@ -65,7 +173,3 @@ Benchmark results (including mean and median timings) will be output in the `tar
 ## Panics
 
 For speed, Lexx does not dynamically allocate buffer space. In `Lexx<CAP>`, `CAP` is the maximum possible token size. If that size is exceeded, a panic will be thrown.
-
-## License
-
-See [LICENSE](LICENSE).

@@ -143,24 +143,28 @@ impl ExactMatcher {
         token_type: u16,
         precedence: u8,
     ) -> ExactMatcher {
-        let mut targets: Box<Vec<Target>> = Box::new(vec![]);
+        // Pre-allocate with the exact capacity needed
+        let mut targets = Vec::with_capacity(matches.len());
+        
         for m in matches {
-            let mut target = Target {
+            // Only allocate the vector once with the exact capacity needed
+            let mut chars = Vec::with_capacity(m.len());
+            // Extend is more efficient than pushing chars one by one
+            chars.extend(m.chars());
+            
+            targets.push(Target {
                 matching: true,
-                target: Box::new(vec![]),
-            };
-            for c in m.chars() {
-                target.target.push(c)
-            }
-            targets.push(target)
+                target: Box::new(chars),
+            });
         }
+        
         ExactMatcher {
             index: 0,
             precedence,
             found: None,
             running: true,
-            targets,
             token_type,
+            targets: Box::new(targets),
         }
     }
 

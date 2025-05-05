@@ -1,6 +1,6 @@
-/// The Keyword matcher is very similar to the [ExactMatcher](crate::matcher_exact::ExactMatcher) in that you give it a list of matches
+/// The Keyword matcher is very similar to the [`ExactMatcher`](crate::matcher_exact::ExactMatcher) in that you give it a list of matches
 /// to make and it looks EXACTLY for those matches. The difference between this matcher and the
-/// [ExactMatcher](crate::matcher_exact::ExactMatcher) is that for `THIS` matcher an exact match must end with a non alpha-numeric
+/// [`ExactMatcher`](crate::matcher_exact::ExactMatcher) is that for `THIS` matcher an exact match must end with a non alpha-numeric
 /// character. For example if you give this matcher "match" as a keyword it will NOT match
 /// "matches", "matchers" or "match1", "1matcher", "2match" etc.
 /// It will match "match ", " match." "---match---" and so on.
@@ -88,39 +88,59 @@ impl Matcher for KeywordMatcher {
         match oc {
             None => {
                 self.running = false;
-                for (i, target) in self.targets.iter_mut().enumerate() {
+                // Check if any target has matched completely
+                for (i, target) in self.targets.iter().enumerate() {
                     if target.matching && target.target.get(self.index).is_none() {
-                        self.found = Some(i)
+                        self.found = Some(i);
+                        break; // Early return once we find a match
                     }
                 }
                 self.generate_keyword_token()
             }
             Some(c) => {
+                // Start with assumption we're not running
                 self.running = false;
+                
+                // Fast path: if no targets are matching, return immediately
+                if !self.targets.iter().any(|t| t.matching) {
+                    return self.generate_keyword_token();
+                }
+                
+                let mut found_potential_match = false;
+                
                 for (i, target) in self.targets.iter_mut().enumerate() {
-                    if target.matching {
-                        match target.target.get(self.index) {
-                            None => {
-                                target.matching = false;
-                                if self.index > 0 && !c.is_alphabetic() {
-                                    self.found = Some(i);
-                                }
+                    if !target.matching {
+                        continue; // Skip targets that are already not matching
+                    }
+                    
+                    match target.target.get(self.index) {
+                        None => {
+                            target.matching = false;
+                            // Only consider it a match if we've matched at least one character
+                            // and the next character is not alphanumeric
+                            if self.index > 0 && !c.is_alphanumeric() {
+                                self.found = Some(i);
+                                found_potential_match = true;
                             }
-                            Some(m) => {
-                                if *m == c {
-                                    self.running = true;
-                                } else {
-                                    target.matching = false;
-                                }
+                        }
+                        Some(m) => {
+                            if *m == c {
+                                self.running = true; // We have at least one match
+                            } else {
+                                target.matching = false;
                             }
                         }
                     }
                 }
+                
                 self.index += 1;
-                if !self.running {
+                
+                if !self.running && !found_potential_match {
                     self.generate_keyword_token()
-                } else {
+                } else if self.running {
                     MatcherResult::Running()
+                } else {
+                    self.generate_keyword_token()
                 }
             }
         }
@@ -134,7 +154,7 @@ impl Matcher for KeywordMatcher {
 }
 
 impl KeywordMatcher {
-    /// Build an keyword matcher
+    /// Build a keyword matcher
     ///
     /// # Arguments
     ///
@@ -147,24 +167,28 @@ impl KeywordMatcher {
         token_type: u16,
         precedence: u8,
     ) -> KeywordMatcher {
-        let mut targets: Box<Vec<Target>> = Box::new(vec![]);
+        // Pre-allocate with the exact capacity needed
+        let mut targets = Vec::with_capacity(matches.len());
+        
         for m in matches {
-            let mut target = Target {
+            // Only allocate the vector once with the exact capacity needed
+            let mut chars = Vec::with_capacity(m.len());
+            // Extend is more efficient than pushing chars one by one
+            chars.extend(m.chars());
+            
+            targets.push(Target {
                 matching: true,
-                target: Box::new(vec![]),
-            };
-            for c in m.chars() {
-                target.target.push(c)
-            }
-            targets.push(target)
+                target: Box::new(chars),
+            });
         }
+        
         KeywordMatcher {
             index: 0,
             precedence,
             found: None,
             running: true,
-            targets,
             token_type,
+            targets: Box::new(targets),
         }
     }
 

@@ -1,7 +1,15 @@
 [package]
 name = "lexx"
-version = "0.2.0"
-edition = "2021"
+version = "1.0.0"
+edition = "2024"
+description = "A fast, extensible, greedy, single-pass text tokenizer for Rust"
+authors = ["Your Name <jeffthomas3000@gmail.com>"]
+license = "MIT"
+repository = "[https://github.com/JeffThomas/lexx](https://github.com/JeffThomas/lexx)"
+documentation = "[https://docs.rs/lexx](https://docs.rs/lexx)"
+keywords = ["tokenizer", "lexer", "parser", "text", "scanning"]
+categories = ["parsing", "text-processing"]
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -10,11 +18,11 @@ name = "lexx"
 path = "src/lib.rs"
 
 [dependencies]
-arrayvec = "0.7.2"
+arrayvec = "0.7.6"
 
 [dev-dependencies]
 criterion = "0.5"
-rand = "0.8"
+rand = "0.9.1"
 
 [[bench]]
 name = "lexx_bench"

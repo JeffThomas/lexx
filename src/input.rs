@@ -78,7 +78,7 @@ pub trait LexxInput: Debug {
 
 /// In-memory input source for Lexx, using a fixed-size buffer of chars.
 ///
-/// Suitable for small or moderate strings. Strings longer than [`BUFFER_SIZE`] are truncated.
+/// Suitable for small or moderate strings. Strings longer than `BUFFER_SIZE` are truncated.
 ///
 /// # Example
 /// ```rust
@@ -102,7 +102,7 @@ pub struct InputString {
 impl InputString {
     /// Creates a new `InputString` from the given string.
     ///
-    /// If the input string is longer than [`BUFFER_SIZE`], it is truncated.
+    /// If the input string is longer than `BUFFER_SIZE`, it is truncated.
     ///
     /// * `text` - The string to use as input.
     pub fn new(text: String) -> Self {
