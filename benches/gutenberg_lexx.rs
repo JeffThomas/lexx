@@ -1,13 +1,11 @@
 use std::fs::{self, File};
 use std::io::BufReader;
-use std::path::Path;
 use criterion::{criterion_group, criterion_main, Criterion};
 use lexx::input::InputReader;
 use lexx::matcher::exact::ExactMatcher;
 use lexx::matcher::symbol::SymbolMatcher;
 use lexx::matcher::whitespace::WhitespaceMatcher;
 use lexx::matcher::word::WordMatcher;
-use lexx::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD};
 use lexx::{Lexx, Lexxer};
 use lexx::matcher::float::FloatMatcher;
 use lexx::matcher::integer::IntegerMatcher;

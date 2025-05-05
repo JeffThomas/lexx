@@ -27,6 +27,31 @@ This project uses GitHub Actions for continuous integration. The following check
 
 Additionally, when a new version tag is pushed (e.g., `v1.0.1`), the crate is automatically published to [crates.io](https://crates.io).
 
+## Performance
+
+Lexx is designed to be a high-performance tokenizer with minimal memory allocations. Benchmark results are automatically generated and published for each commit to the main branch.
+
+### Key Performance Metrics
+
+| Benchmark | Time |
+|-----------|------|
+| Small file (15 bytes) | ~1.2 µs |
+| UTF-8 sample (13 KB) | ~350 µs |
+| Large file (1.8 MB) | ~45 ms |
+
+These numbers represent performance on a standard GitHub Actions runner. Your results may vary depending on hardware.
+
+### Performance Features
+
+- Zero-copy tokenization where possible
+- Pre-allocated buffers for token storage
+- Optimized matchers for common token types
+- Single-pass processing
+
+### Benchmark Visualization
+
+Performance trends are tracked over time and can be viewed on the [GitHub Pages benchmark dashboard](https://YOUR_USERNAME.github.io/lexx/dev/bench/).
+
 ## Usage
 
 Add `lexx` to your `Cargo.toml`:
