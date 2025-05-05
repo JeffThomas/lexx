@@ -281,7 +281,7 @@ mod tests {
 
         let start = Instant::now();
 
-        let file = File::open("./tests/Varney-the-Vampire.txt").unwrap();
+        let file = File::open("./test_data/Varney-the-Vampire.txt").unwrap();
 
         let input_file = InputReader::new(file);
 
@@ -342,7 +342,7 @@ mod tests {
 
     #[test]
     fn lexx_parse_utf_file() {
-        let file = File::open("./tests/utf-8-sampler.txt").unwrap();
+        let file = File::open("./test_data/utf-8-sampler.txt").unwrap();
 
         let input_file = InputReader::new(file);
 

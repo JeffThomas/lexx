@@ -11,8 +11,8 @@ use lexx::token::{TOKEN_TYPE_WORD};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Change this to your file path
-    // The repo includes a sample text file in tests/Varney-the-Vampire.txt
-    let file_path = Path::new("tests/Varney-the-Vampire.txt");
+    // The repo includes a sample text file in test_data/Varney-the-Vampire.txt
+    let file_path = Path::new("test_data/Varney-the-Vampire.txt");
     
     // Open the file and create a reader
     let file = File::open(file_path)?;

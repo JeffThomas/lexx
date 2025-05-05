@@ -15,6 +15,18 @@ A fast, extensible, greedy, single-pass text tokenizer implemented in Rust. It u
 - Factory functions for common tokenizer configurations
 - Builder pattern for easy setup
 
+## Continuous Integration
+
+This project uses GitHub Actions for continuous integration. The following checks are run on each push and pull request:
+
+- **Tests**: Runs the test suite to ensure everything works correctly
+- **Clippy**: Checks the code for common mistakes and enforces best practices
+- **Format**: Ensures the code follows Rust's formatting guidelines
+- **Build**: Verifies that the project builds successfully
+- **Coverage**: Generates code coverage reports
+
+Additionally, when a new version tag is pushed (e.g., `v1.0.1`), the crate is automatically published to [crates.io](https://crates.io).
+
 ## Usage
 
 Add `lexx` to your `Cargo.toml`:

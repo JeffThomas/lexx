@@ -12,7 +12,7 @@ use lexx::matcher::whitespace::WhitespaceMatcher;
 use lexx::matcher::word::WordMatcher;
 
 fn bench_lexx_tokenization(c: &mut Criterion) {
-    let input = std::fs::read_to_string("./tests/utf-8-sampler.txt").unwrap();
+    let input = std::fs::read_to_string("./test_data/utf-8-sampler.txt").unwrap();
     c.bench_function("lexx_tokenization_utf8_sampler", |b| {
         b.iter(|| {
             let lexx_input = InputString::new(input.clone());
@@ -36,7 +36,7 @@ fn bench_lexx_tokenization(c: &mut Criterion) {
 }
 
 fn bench_lexx_small_file(c: &mut Criterion) {
-    let input = std::fs::read_to_string("./tests/small_file.txt").unwrap();
+    let input = std::fs::read_to_string("./test_data/small_file.txt").unwrap();
     c.bench_function("lexx_tokenization_small_file", |b| {
         b.iter(|| {
             let lexx_input = InputString::new(input.clone());
@@ -113,7 +113,7 @@ fn bench_lexx_random_input(c: &mut Criterion) {
 }
 
 fn bench_lexx_varney_file(c: &mut Criterion) {
-    let input = std::fs::read_to_string("./tests/Varney-the-Vampire.txt").expect("Varney file missing");
+    let input = std::fs::read_to_string("./test_data/Varney-the-Vampire.txt").expect("Varney file missing");
     c.bench_function("lexx_tokenization_varney_vampire_txt", |b| {
         b.iter(|| {
             let lexx_input = InputString::new(input.clone());
@@ -137,7 +137,7 @@ fn bench_lexx_varney_file(c: &mut Criterion) {
 }
 
 fn bench_lexx_large_file(c: &mut Criterion) {
-    let input = std::fs::read_to_string("./tests/Varney-the-Vampire.txt").expect("large file missing");
+    let input = std::fs::read_to_string("./test_data/Varney-the-Vampire.txt").expect("large file missing");
     c.bench_function("lexx_tokenization_large_file_txt", |b| {
         b.iter(|| {
             let lexx_input = InputString::new(input.clone());

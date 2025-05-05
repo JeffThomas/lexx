@@ -1,6 +1,6 @@
 [package]
 name = "lexx"
-version = "1.0.0"
+version = "0.1.0"
 edition = "2024"
 description = "A fast, extensible, greedy, single-pass text tokenizer for Rust"
 authors = ["Your Name <jeffthomas3000@gmail.com>"]
