@@ -3,7 +3,6 @@
 /// The matcher recognizes contiguous runs of whitespace and produces tokens of type `TOKEN_TYPE_WHITESPACE`.
 ///
 /// This module is useful for lexers that need to identify and handle whitespace regions, which are often ignored or treated specially in tokenization.
-
 use crate::matcher::{Matcher, MatcherResult};
 pub use crate::token::{Token, TOKEN_TYPE_WHITESPACE};
 use std::collections::HashMap;
@@ -96,7 +95,7 @@ impl WhitespaceMatcher {
     fn generate_whitspace_token(&mut self, value: &[char]) -> MatcherResult {
         if self.index > 0 {
             MatcherResult::Matched(Token {
-                value: value[0..self.index].into_iter().collect(),
+                value: value[0..self.index].iter().collect(),
                 token_type: TOKEN_TYPE_WHITESPACE,
                 len: self.index,
                 line: self.line,

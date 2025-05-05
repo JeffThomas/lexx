@@ -1,6 +1,5 @@
 /// The integer matcher matches integer numbers. To qualify as integer the numbers must
 /// start and end with a numeric digit.
-
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::{Token, TOKEN_TYPE_INTEGER};
 use std::collections::HashMap;
@@ -66,7 +65,7 @@ impl Matcher for IntegerMatcher {
         value: &[char],
         _ctx: &mut Box<HashMap<String, i32>>,
     ) -> MatcherResult {
-        return match oc {
+        match oc {
             None => self.generate_integer_token(value),
             Some(c) => {
                 if c.is_numeric() {
@@ -76,7 +75,7 @@ impl Matcher for IntegerMatcher {
                     self.generate_integer_token(value)
                 }
             }
-        };
+        }
     }
     fn is_running(&self) -> bool {
         self.running
@@ -92,7 +91,7 @@ impl IntegerMatcher {
         self.running = false;
         if self.index > 0 {
             MatcherResult::Matched(Token {
-                value: value[0..self.index].into_iter().collect(),
+                value: value[0..self.index].iter().collect(),
                 token_type: TOKEN_TYPE_INTEGER,
                 len: self.index,
                 line: 0,

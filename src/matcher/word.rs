@@ -3,7 +3,6 @@
 /// The matcher recognizes words and produces tokens of type `TOKEN_TYPE_WORD`.
 ///
 /// This module is useful for lexers that need to identify and extract words or identifiers from text.
-
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::{Token, TOKEN_TYPE_WORD};
 use std::collections::HashMap;
@@ -91,7 +90,7 @@ impl WordMatcher {
     fn generate_word_token(&mut self, value: &[char]) -> MatcherResult {
         if self.index > 0 {
             MatcherResult::Matched(Token {
-                value: value[0..self.index].into_iter().collect(),
+                value: value[0..self.index].iter().collect(),
                 token_type: TOKEN_TYPE_WORD,
                 len: self.index,
                 line: 0,

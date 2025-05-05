@@ -4,7 +4,7 @@
 /// character. For example if you give this matcher "match" as a keyword it will NOT match
 /// "matches", "matchers" or "match1", "1matcher", "2match" etc.
 /// It will match "match ", " match." "---match---" and so on.
-
+/// 
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::Token;
 use std::collections::HashMap;

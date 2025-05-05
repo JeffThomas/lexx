@@ -111,6 +111,12 @@ pub struct RollingCharBuffer<const CAP: usize> {
     buffer: Box<[char; CAP]>,
 }
 
+impl<const CAP: usize> Default for RollingCharBuffer<CAP> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// Creates a new [RollingCharBuffer]
     ///
@@ -381,7 +387,7 @@ mod tests {
         let mut rb = RollingCharBuffer::<5>::new();
 
         assert_eq!(rb.len(), 0);
-        assert_eq!(rb.is_empty(), true);
+        assert!(rb.is_empty());
         assert_eq!(rb.read(), Err(RollingCharBufferError::BufferEmptyError));
     }
 
@@ -391,10 +397,10 @@ mod tests {
 
         assert_eq!(rb.push('t'), Ok(()));
         assert_eq!(rb.len(), 1);
-        assert_eq!(rb.is_empty(), false);
+        assert!(!rb.is_empty());
         assert_eq!(rb.read(), Ok('t'));
         assert_eq!(rb.read(), Err(RollingCharBufferError::BufferEmptyError));
-        assert_eq!(rb.is_empty(), true);
+        assert!(rb.is_empty());
     }
 
     #[test]
@@ -406,13 +412,13 @@ mod tests {
         assert_eq!(rb.push('d'), Ok(()));
         assert_eq!(rb.push('e'), Ok(()));
         assert_eq!(rb.push('f'), Err(RollingCharBufferError::BufferFullError));
-        assert_eq!(rb.is_empty(), false);
+        assert!(!rb.is_empty());
         assert_eq!(rb.len(), 5);
         assert_eq!(rb.read(), Ok('a'));
         assert_eq!(rb.push('f'), Ok(()));
         assert_eq!(rb.read(), Ok('b'));
         assert_eq!(rb.len(), 4);
-        assert_eq!(rb.is_empty(), false);
+        assert!(!rb.is_empty());
     }
 
     #[test]
@@ -425,9 +431,9 @@ mod tests {
         assert_eq!(rb.push('e'), Ok(()));
         assert_eq!(rb.push('f'), Err(RollingCharBufferError::BufferFullError));
         assert_eq!(rb.len(), 5);
-        assert_eq!(rb.is_empty(), false);
+        assert!(!rb.is_empty());
         rb.clear();
-        assert_eq!(rb.is_empty(), true);
+        assert!(rb.is_empty());
         assert_eq!(rb.read(), Err(RollingCharBufferError::BufferEmptyError));
         assert_eq!(rb.len(), 0);
         assert_eq!(rb.push('a'), Ok(()));
@@ -436,9 +442,9 @@ mod tests {
         assert_eq!(rb.len(), 3);
         assert_eq!(rb.read(), Ok('a'));
         assert_eq!(rb.len(), 2);
-        assert_eq!(rb.is_empty(), false);
+        assert!(!rb.is_empty());
         rb.clear();
-        assert_eq!(rb.is_empty(), true);
+        assert!(rb.is_empty());
         assert_eq!(rb.read(), Err(RollingCharBufferError::BufferEmptyError));
         assert_eq!(rb.len(), 0);
         assert_eq!(rb.push('a'), Ok(()));
@@ -460,16 +466,16 @@ mod tests {
         assert_eq!(rb.len(), 1);
         assert_eq!(rb.push('e'), Ok(()));
         assert_eq!(rb.len(), 2);
-        assert_eq!(rb.is_empty(), false);
+        assert!(!rb.is_empty());
         assert_eq!(rb.push('f'), Ok(()));
         assert_eq!(rb.len(), 3);
-        assert_eq!(rb.is_empty(), false);
+        assert!(!rb.is_empty());
         assert_eq!(rb.push('g'), Ok(()));
         assert_eq!(rb.len(), 4);
         assert_eq!(rb.push('h'), Ok(()));
         assert_eq!(rb.len(), 5);
         assert_eq!(rb.push('i'), Err(RollingCharBufferError::BufferFullError));
-        assert_eq!(rb.is_empty(), false);
+        assert!(!rb.is_empty());
         assert_eq!(rb.read(), Ok('d'));
         assert_eq!(rb.len(), 4);
         assert_eq!(rb.push('i'), Ok(()));
@@ -485,10 +491,10 @@ mod tests {
         assert_eq!(rb.read(), Ok('i'));
         assert_eq!(rb.len(), 0);
         assert_eq!(rb.read(), Err(RollingCharBufferError::BufferEmptyError));
-        assert_eq!(rb.is_empty(), true);
+        assert!(rb.is_empty());
         assert_eq!(rb.push('j'), Ok(()));
         assert_eq!(rb.len(), 1);
-        assert_eq!(rb.is_empty(), false);
+        assert!(!rb.is_empty());
     }
 
     #[test]
@@ -497,7 +503,7 @@ mod tests {
 
         assert_eq!(rb.push('a'), Ok(()));
         assert_eq!(rb.len(), 1);
-        assert_eq!(rb.extend(&vec!['b', 'c', 'd']), Ok(1));
+        assert_eq!(rb.extend(&['b', 'c', 'd']), Ok(1));
         assert_eq!(rb.len(), 4);
         assert_eq!(rb.read(), Ok('a'));
         assert_eq!(rb.len(), 3);
@@ -505,10 +511,10 @@ mod tests {
         assert_eq!(rb.len(), 2);
         assert_eq!(rb.read(), Ok('c'));
         assert_eq!(rb.len(), 1);
-        assert_eq!(rb.extend(&vec!['e', 'f', 'g', 'h']), Ok(0));
+        assert_eq!(rb.extend(&['e', 'f', 'g', 'h']), Ok(0));
         assert_eq!(rb.len(), 5);
         assert_eq!(
-            rb.extend(&vec!['i', 'j', 'k', 'l']),
+            rb.extend(&['i', 'j', 'k', 'l']),
             Err(RollingCharBufferError::BufferFullError)
         );
         assert_eq!(rb.read(), Ok('d'));
@@ -518,14 +524,14 @@ mod tests {
         assert_eq!(rb.read(), Ok('f'));
         assert_eq!(rb.len(), 2);
         assert_eq!(
-            rb.extend(&vec!['i', 'j', 'k', 'l']),
+            rb.extend(&['i', 'j', 'k', 'l']),
             Err(RollingCharBufferError::BufferFullError)
         );
         assert_eq!(rb.read(), Ok('g'));
         assert_eq!(rb.len(), 1);
         assert_eq!(rb.read(), Ok('h'));
         assert_eq!(rb.len(), 0);
-        assert_eq!(rb.is_empty(), true);
+        assert!(rb.is_empty());
     }
 
     #[test]
@@ -534,10 +540,10 @@ mod tests {
 
         assert_eq!(rb.prefix('t'), Ok(()));
         assert_eq!(rb.len(), 1);
-        assert_eq!(rb.is_empty(), false);
+        assert!(!rb.is_empty());
         assert_eq!(rb.read(), Ok('t'));
         assert_eq!(rb.read(), Err(RollingCharBufferError::BufferEmptyError));
-        assert_eq!(rb.is_empty(), true);
+        assert!(rb.is_empty());
     }
 
     #[test]
@@ -547,11 +553,11 @@ mod tests {
         assert_eq!(rb.push('t'), Ok(()));
         assert_eq!(rb.prefix('i'), Ok(()));
         assert_eq!(rb.len(), 2);
-        assert_eq!(rb.is_empty(), false);
+        assert!(!rb.is_empty());
         assert_eq!(rb.read(), Ok('i'));
         assert_eq!(rb.read(), Ok('t'));
         assert_eq!(rb.read(), Err(RollingCharBufferError::BufferEmptyError));
-        assert_eq!(rb.is_empty(), true);
+        assert!(rb.is_empty());
     }
 
     #[test]
@@ -560,7 +566,7 @@ mod tests {
 
         assert_eq!(rb.push('a'), Ok(()));
         assert_eq!(rb.len(), 1);
-        assert_eq!(rb.extend(&vec!['b', 'c', 'd']), Ok(4));
+        assert_eq!(rb.extend(&['b', 'c', 'd']), Ok(4));
         assert_eq!(rb.len(), 4);
         assert_eq!(rb.read(), Ok('a'));
         assert_eq!(rb.len(), 3);
@@ -568,11 +574,11 @@ mod tests {
         assert_eq!(rb.len(), 2);
         assert_eq!(rb.read(), Ok('c'));
         assert_eq!(rb.len(), 1);
-        assert_eq!(rb.extend(&vec!['e', 'f', 'g', 'h']), Ok(3));
-        assert_eq!(rb.prepend(&vec!['a', 'b', 'c']), Ok(0));
+        assert_eq!(rb.extend(&['e', 'f', 'g', 'h']), Ok(3));
+        assert_eq!(rb.prepend(&['a', 'b', 'c']), Ok(0));
         assert_eq!(rb.len(), 8);
         assert_eq!(
-            rb.extend(&vec!['i', 'j', 'k', 'l']),
+            rb.extend(&['i', 'j', 'k', 'l']),
             Err(RollingCharBufferError::BufferFullError)
         );
         assert_eq!(rb.read(), Ok('a'));
@@ -581,8 +587,8 @@ mod tests {
         assert_eq!(rb.len(), 6);
         assert_eq!(rb.read(), Ok('c'));
         assert_eq!(rb.len(), 5);
-        assert_eq!(rb.extend(&vec!['i', 'j']), Ok(1));
-        assert_eq!(rb.prepend(&vec!['c']), Ok(0));
+        assert_eq!(rb.extend(&['i', 'j']), Ok(1));
+        assert_eq!(rb.prepend(&['c']), Ok(0));
         assert_eq!(rb.read(), Ok('c'));
         assert_eq!(rb.len(), 7);
         assert_eq!(rb.read(), Ok('d'));
@@ -599,6 +605,6 @@ mod tests {
         assert_eq!(rb.len(), 1);
         assert_eq!(rb.read(), Ok('j'));
         assert_eq!(rb.len(), 0);
-        assert_eq!(rb.is_empty(), true);
+        assert!(rb.is_empty());
     }
 }

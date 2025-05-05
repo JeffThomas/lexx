@@ -189,7 +189,7 @@ impl Error for LexxError {
 /// # Type Parameter
 ///
 /// * `CAP` - The maximum token size supported by this lexer instance. For speed, no dynamic allocation is performed.
-///           If a token exceeds this size, a panic will occur.
+///   If a token exceeds this size, a panic will occur.
 ///
 /// # Fields
 ///
@@ -235,9 +235,9 @@ impl<const CAP: usize> Lexx<CAP> {
     /// # Arguments
     ///
     /// * `input` - An instance of [LexxInput] that provides
-    /// the char stream that will be lexed.
+    ///   the char stream that will be lexed.
     /// * `matchers` - a [vec] of [Matcher]s that will be used to
-    /// generate Tokens.
+    ///   generate Tokens.
     ///
     /// # Examples
     ///
@@ -353,7 +353,7 @@ impl<const CAP: usize> Lexxer for Lexx<CAP> {
             self.lexx_result = None;
             return lr;
         }
-        return self.get_token();
+        self.get_token()
     }
 
     ///

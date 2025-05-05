@@ -1,7 +1,6 @@
 /// The `exact` module provides the `ExactMatcher`, which matches strings exactly as specified.
 /// It allows users to define a list of strings to match against, ensuring that only exact matches
 /// are recognized, regardless of their position in the input stream.
-
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::Token;
 use std::collections::HashMap;

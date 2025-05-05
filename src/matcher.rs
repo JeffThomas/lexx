@@ -97,14 +97,14 @@ pub trait Matcher: Debug {
     /// Puts the matcher in a starting state to beging accepting [char]s
     fn reset(&mut self, ctx: &mut Box<HashMap<String, i32>>);
     /// The function that does all the work, it is called repeatedly
-    /// with new [`Option<char>`] values until it returns a [MatcherResult::Matched] or
+    ///   with new [`Option<char>`] values until it returns a [MatcherResult::Matched] or
     /// [MatcherResult::Failed].
     /// * `oc` - The current [`Option<char>`] to match against. An [None] input indicates
-    /// the end of input, giving the matcher a chance to match what it's already seen or not. For
-    /// example `1234[EOF]` is a valid integer for the [IntegerMatcher](integer::IntegerMatcher)
+    ///   the end of input, giving the matcher a chance to match what it's already seen or not. For
+    ///   example `1234[EOF]` is a valid integer for the [IntegerMatcher](integer::IntegerMatcher)
     /// * `value` - Is an array of [char] characters that have already been sent to the [Matcher],
-    /// so that the [Matcher]s don't have to keep their own history. [Matcher]s can use this to make
-    /// the [String] value for their [Token] if they find a match.
+    ///   so that the [Matcher]s don't have to keep their own history. [Matcher]s can use this to make
+    ///   the [String] value for their [Token] if they find a match.
     fn find_match(
         &mut self,
         oc: Option<char>,

@@ -3,7 +3,6 @@
 /// The matcher recognizes contiguous runs of symbol characters and produces tokens of type `TOKEN_TYPE_SYMBOL`.
 ///
 /// This module is useful for lexers that need to identify and extract symbols (e.g., operators, punctuation) from text.
-
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::{Token, TOKEN_TYPE_SYMBOL};
 use std::collections::HashMap;
@@ -89,7 +88,7 @@ impl SymbolMatcher {
         self.running = false;
         if self.index > 0 {
             MatcherResult::Matched(Token {
-                value: value[0..self.index].into_iter().collect(),
+                value: value[0..self.index].iter().collect(),
                 token_type: TOKEN_TYPE_SYMBOL,
                 len: self.index,
                 line: 0,

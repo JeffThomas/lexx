@@ -1,7 +1,6 @@
 /// The float matcher matches floating point numbers. To qualify as floating point, the numbers must
 /// start and end with a numeric digit and have a period within them. For example `1.0`. Thus,
 /// `.1` and `1.` do not qualify as floating point numbers.
-
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::{Token, TOKEN_TYPE_FLOAT};
 use std::collections::HashMap;
@@ -73,7 +72,7 @@ impl Matcher for FloatMatcher {
         value: &[char],
         _ctx: &mut Box<HashMap<String, i32>>,
     ) -> MatcherResult {
-        return match oc {
+        match oc {
             None => self.generate_float_token(value),
             Some(c) => {
                 if c == '.' && !self.dot && self.index > 0 {
@@ -91,7 +90,7 @@ impl Matcher for FloatMatcher {
                     self.generate_float_token(value)
                 }
             }
-        };
+        }
     }
     fn is_running(&self) -> bool {
         self.running
@@ -107,7 +106,7 @@ impl FloatMatcher {
         self.running = false;
         if self.index > 0 && self.float {
             MatcherResult::Matched(Token {
-                value: value[0..self.index].into_iter().collect(),
+                value: value[0..self.index].iter().collect(),
                 token_type: TOKEN_TYPE_FLOAT,
                 len: self.index,
                 line: 0,
