@@ -2,7 +2,7 @@
 /// start and end with a numeric digit and have a period within them. For example `1.0`. Thus,
 /// `.1` and `1.` do not qualify as floating point numbers.
 use crate::matcher::{Matcher, MatcherResult};
-use crate::token::{Token, TOKEN_TYPE_FLOAT};
+use crate::token::{TOKEN_TYPE_FLOAT, Token};
 use std::collections::HashMap;
 
 ///

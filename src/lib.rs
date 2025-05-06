@@ -123,11 +123,11 @@
 pub mod input;
 /// The [Matcher] trait for lexx
 pub mod matcher;
-/// The results of a match
-pub mod token;
 /// [RollingCharBuffer](RollingCharBuffer) is a fast, fixed size
 /// [char] buffer that can be used as a LIFO or FIFO stack.
 pub mod rolling_char_buffer;
+/// The results of a match
+pub mod token;
 
 use arrayvec::ArrayVec;
 use std::collections::HashMap;
@@ -137,10 +137,10 @@ use std::fmt;
 use crate::input::LexxInput;
 // use crate::matcher::Matcher;
 // use crate::matcher::MatcherResult::{Failed, Matched, Running};
-use crate::rolling_char_buffer::{RollingCharBuffer, RollingCharBufferError};
-use token::Token;
 use crate::matcher::Matcher;
 use crate::matcher::MatcherResult::{Failed, Matched, Running};
+use crate::rolling_char_buffer::{RollingCharBuffer, RollingCharBufferError};
+use token::Token;
 
 /// Errors Lexx can return
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -148,7 +148,7 @@ pub enum LexxError {
     /// no matcher matched the current character(s)
     TokenNotFound(String),
     /// some other error
-    Error(String)
+    Error(String),
 }
 
 impl fmt::Display for LexxError {
@@ -548,12 +548,12 @@ impl<const CAP: usize> Iterator for Lexx<CAP> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Lexx, Lexxer, Token};
     use crate::input::InputString;
     use crate::matcher::exact::ExactMatcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::matcher::word::WordMatcher;
     use crate::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_WHITESPACE};
+    use crate::{Lexx, Lexxer, Token};
 
     #[test]
     fn lexx_test_precedence() {

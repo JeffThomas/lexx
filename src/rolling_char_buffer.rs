@@ -286,7 +286,11 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
         if self.is_empty() {
             return Err(RollingCharBufferError::BufferEmptyError);
         }
-        self.end = if self.end == 0 { self.cap - 1 } else { self.end - 1 };
+        self.end = if self.end == 0 {
+            self.cap - 1
+        } else {
+            self.end - 1
+        };
         if self.full {
             self.full = false;
         }
@@ -309,7 +313,11 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
         if self.full {
             return Err(RollingCharBufferError::BufferFullError);
         }
-        self.start = if self.start == 0 { self.cap - 1 } else { self.start - 1 };
+        self.start = if self.start == 0 {
+            self.cap - 1
+        } else {
+            self.start - 1
+        };
         self.buffer[self.start] = c;
         if self.end == self.start {
             self.full = true;
@@ -379,8 +387,8 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
 
 #[cfg(test)]
 mod tests {
-    use crate::rolling_char_buffer::RollingCharBufferError;
     use crate::RollingCharBuffer;
+    use crate::rolling_char_buffer::RollingCharBufferError;
 
     #[test]
     fn test_buffer_is_empty() {

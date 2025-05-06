@@ -4,7 +4,7 @@
 ///
 /// This module is useful for lexers that need to identify and extract words or identifiers from text.
 use crate::matcher::{Matcher, MatcherResult};
-use crate::token::{Token, TOKEN_TYPE_WORD};
+use crate::token::{TOKEN_TYPE_WORD, Token};
 use std::collections::HashMap;
 
 /// The `WordMatcher` is a matcher that matches word tokens in the input stream.
@@ -105,11 +105,11 @@ impl WordMatcher {
 
 #[cfg(test)]
 mod tests {
-    use crate::token::TOKEN_TYPE_WORD;
-    use crate::{Lexx, LexxError, Lexxer};
     use crate::input::InputString;
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::matcher::word::WordMatcher;
+    use crate::token::TOKEN_TYPE_WORD;
+    use crate::{Lexx, LexxError, Lexxer};
 
     #[test]
     fn matcher_word_matches_word() {

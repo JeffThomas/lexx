@@ -31,10 +31,10 @@
 /// use std::collections::HashMap;
 /// use lexx::matcher::{Matcher, MatcherResult};
 /// use lexx::token::{Token, TOKEN_TYPE_WORD};
-/// 
+///
 /// #[derive(Debug)]
 /// struct SimpleWordMatcher { index: usize, running: bool }
-/// 
+///
 /// impl Matcher for SimpleWordMatcher {
 ///     fn reset(&mut self, _ctx: &mut Box<HashMap<String, i32>>) {
 ///         self.index = 0;
@@ -64,7 +64,7 @@
 ///     fn is_running(&self) -> bool { self.running }
 ///     fn precedence(&self) -> u8 { 0 }
 /// }
-/// 
+///
 /// let mut ctx: Box<HashMap<String, i32>> = Box::new(HashMap::new());
 /// let mut matcher = SimpleWordMatcher { index: 0, running: true };
 /// assert!(matches!(matcher.find_match(Some('w'), &['w'], &mut ctx), MatcherResult::Running()));

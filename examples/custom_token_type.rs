@@ -13,7 +13,7 @@ fn main() {
     // Sample text with email-like content
     let text = "Contact us at support@example.com or sales@company.co.uk for more information.";
     let input = InputString::new(text.to_string());
-    
+
     // Create a Lexx tokenizer using existing matchers in a customized configuration
     // We'll use ExactMatcher to match common email domains with high precedence
     let mut lexx = Lexx::<512>::new(
@@ -30,10 +30,10 @@ fn main() {
             Box::new(SymbolMatcher { index: 0, precedence: 0, running: true }),
         ]
     );
-    
+
     println!("Tokenizing: \"{}\"", text);
     println!("{}", "-".repeat(70));
-    
+
     loop {
         match lexx.next_token() {
             Ok(Some(token)) => {

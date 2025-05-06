@@ -213,7 +213,8 @@ where
         } else {
             // Move rollover bytes to front
             let rollover_len = self.rollover_end - self.rollover_start;
-            self.buffer.copy_within(self.rollover_start..self.rollover_end, 0);
+            self.buffer
+                .copy_within(self.rollover_start..self.rollover_end, 0);
             let read_bytes = self.reader.read(&mut self.buffer[rollover_len..]).unwrap();
             let n = read_bytes + rollover_len;
             self.rollover_start = 0;
@@ -266,7 +267,10 @@ mod tests {
     use crate::matcher::symbol::SymbolMatcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::matcher::word::WordMatcher;
-    use crate::token::{Token, TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD};
+    use crate::token::{
+        TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE, 
+        TOKEN_TYPE_WORD, Token
+    };
 
     #[test]
     fn lexx_parse_large_file() {
@@ -354,7 +358,7 @@ mod tests {
             len: 0,
             line: 0,
             column: 0,
-            precedence: 0
+            precedence: 0,
         };
 
         for token in lexx {

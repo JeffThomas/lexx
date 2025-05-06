@@ -60,7 +60,10 @@ impl Clone for Token {
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Token({}, '{}', ln:{}, col:{})",
-               self.token_type, self.value, self.line, self.column)
+        write!(
+            f,
+            "Token({}, '{}', ln:{}, col:{})",
+            self.token_type, self.value, self.line, self.column
+        )
     }
 }

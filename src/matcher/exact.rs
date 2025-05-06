@@ -53,7 +53,7 @@ pub struct Target {
 /// assert!(matches!(lexx.next_token(), Ok(None)));
 /// ```
 #[derive(Clone, Debug)]
-    pub struct ExactMatcher {
+pub struct ExactMatcher {
     /// Current size of the ongoing match.
     pub index: usize,
     /// This matchers precedence.
@@ -144,19 +144,19 @@ impl ExactMatcher {
     ) -> ExactMatcher {
         // Pre-allocate with the exact capacity needed
         let mut targets = Vec::with_capacity(matches.len());
-        
+
         for m in matches {
             // Only allocate the vector once with the exact capacity needed
             let mut chars = Vec::with_capacity(m.len());
             // Extend is more efficient than pushing chars one by one
             chars.extend(m.chars());
-            
+
             targets.push(Target {
                 matching: true,
                 target: Box::new(chars),
             });
         }
-        
+
         ExactMatcher {
             index: 0,
             precedence,
@@ -191,12 +191,12 @@ impl ExactMatcher {
 
 #[cfg(test)]
 mod tests {
-    use crate::token::TOKEN_TYPE_EXACT;
-    use crate::{Lexx, LexxError, Lexxer};
     use crate::input::InputString;
     use crate::matcher::exact::ExactMatcher;
     use crate::matcher::symbol::SymbolMatcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
+    use crate::token::TOKEN_TYPE_EXACT;
+    use crate::{Lexx, LexxError, Lexxer};
 
     #[test]
     fn matcher_exact_matches_word() {
@@ -371,8 +371,8 @@ mod tests {
 
     #[test]
     fn example_test() {
-        use crate::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
         use crate::Lexx;
+        use crate::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
 
         let lexx_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
 

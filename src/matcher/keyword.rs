@@ -100,19 +100,19 @@ impl Matcher for KeywordMatcher {
             Some(c) => {
                 // Start with assumption we're not running
                 self.running = false;
-                
+
                 // Fast path: if no targets are matching, return immediately
                 if !self.targets.iter().any(|t| t.matching) {
                     return self.generate_keyword_token();
                 }
-                
+
                 let mut found_potential_match = false;
-                
+
                 for (i, target) in self.targets.iter_mut().enumerate() {
                     if !target.matching {
                         continue; // Skip targets that are already not matching
                     }
-                    
+
                     match target.target.get(self.index) {
                         None => {
                             target.matching = false;
@@ -132,9 +132,9 @@ impl Matcher for KeywordMatcher {
                         }
                     }
                 }
-                
+
                 self.index += 1;
-                
+
                 if !self.running && !found_potential_match {
                     self.generate_keyword_token()
                 } else if self.running {
@@ -169,19 +169,17 @@ impl KeywordMatcher {
     ) -> KeywordMatcher {
         // Pre-allocate with the exact capacity needed
         let mut targets = Vec::with_capacity(matches.len());
-        
         for m in matches {
             // Only allocate the vector once with the exact capacity needed
             let mut chars = Vec::with_capacity(m.len());
             // Extend is more efficient than pushing chars one by one
             chars.extend(m.chars());
-            
             targets.push(Target {
                 matching: true,
                 target: Box::new(chars),
             });
         }
-        
+
         KeywordMatcher {
             index: 0,
             precedence,
@@ -216,11 +214,11 @@ impl KeywordMatcher {
 
 #[cfg(test)]
 mod tests {
-    use crate::token::TOKEN_TYPE_KEYWORD;
-    use crate::{Lexx, LexxError, Lexxer};
     use crate::input::InputString;
     use crate::matcher::keyword::KeywordMatcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
+    use crate::token::TOKEN_TYPE_KEYWORD;
+    use crate::{Lexx, LexxError, Lexxer};
 
     #[test]
     fn matcher_exact_matches_word() {
