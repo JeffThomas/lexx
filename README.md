@@ -1,37 +1,131 @@
-# lexx
+# Lexx
 
-A fast, extensible, greedy, single-pass text tokenizer implemented in Rust. It uses ArrayVec for more efficient memory management.
+A fast, extensible, greedy, single-pass text tokenizer implemented in Rust. Lexx is designed for high-performance tokenization with minimal memory allocations, making it suitable for parsing large files or real-time text processing.
 
 ## Overview
 
-`lexx` is a fast and flexible tokenizer library that allows you to define and compose various token matching strategies. The library is designed to be easy to use while maintaining high performance.
+Lexx is a tokenizer library that allows you to define and compose various token matching strategies. It processes input character-by-character, identifying the longest possible match at each position using a set of configurable matchers. It includes a precedence mechanism for resolving matcher conflicts.
 
-## Features
+## Key Features
 
-- Single-pass tokenization
-- No memory allocation during tokenization
-- Composable matcher system
-- Helper methods for token inspection
-- Factory functions for common tokenizer configurations
-- Builder pattern for easy setup
+- **High Performance**: Single-pass tokenization with minimal memory allocations
+- **Flexible Matching**: Composable matcher system with precedence control
+- **Zero-Copy Design**: Uses ArrayVec for efficient memory management
+- **Rich Token Information**: Tokens include type, value, line, and column information
+- **Extensible**: Create custom matchers for domain-specific tokenization needs
+- **Iterator Interface**: Simple integration with Rust's iterator ecosystem
 
-## Continuous Integration
+## Architecture
 
-This project uses GitHub Actions for continuous integration. The following checks are run on each push and pull request:
+Lexx consists of four main components:
 
-- **Tests**: Runs the test suite to ensure everything works correctly
-- **Clippy**: Checks the code for common mistakes and enforces best practices
-- **Format**: Ensures the code follows Rust's formatting guidelines
-- **Build**: Verifies that the project builds successfully
-- **Coverage**: Generates code coverage reports
+1. **LexxInput**: Provides a stream of characters from various sources
+2. **Matchers**: Identify specific patterns in the input (words, numbers, symbols, etc.)
+3. **Tokens**: Represent the results of successful matches
+4. **Lexx Engine**: Orchestrates the tokenization process
 
-Additionally, when a new version tag is pushed (e.g., `v1.0.1`), the crate is automatically published to [crates.io](https://crates.io).
+### Built-in Matchers
+
+Lexx provides several built-in matchers for common token types:
+
+- `WordMatcher`: Matches alphabetic words
+- `IntegerMatcher`: Matches integer numbers
+- `FloatMatcher`: Matches floating-point numbers
+- `SymbolMatcher`: Matches non-alphanumeric symbols
+- `WhitespaceMatcher`: Matches whitespace characters (spaces, tabs, newlines)
+- `KeywordMatcher`: Matches specific keywords (but not as substrings)
+- `ExactMatcher`: Matches exact string patterns (operators, delimiters, etc.)
+
+### Precedence System
+
+Matchers can be assigned precedence values to resolve conflicts when multiple matchers could match the same input. This allows for sophisticated tokenization strategies, such as recognizing keywords as distinct from regular words.
+
+## Usage Examples
+
+### Basic Tokenization
+
+```rust
+use lexx::Lexx;
+use lexx::input::InputString;
+use lexx::matcher::word::WordMatcher;
+use lexx::matcher::whitespace::WhitespaceMatcher;
+use lexx::matcher::symbol::SymbolMatcher;
+use lexx::matcher::integer::IntegerMatcher;
+use lexx::matcher::float::FloatMatcher;
+
+fn main() {
+    // Create a simple input string
+    let input_text = "Hello world! This is 42 and 3.14159.";
+    let input = InputString::new(input_text.to_string());
+    
+    // Create a Lexx tokenizer with standard matchers
+    let lexx = Lexx::<512>::new(
+        Box::new(input),
+        vec![
+            Box::new(WhitespaceMatcher { index: 0, column: 0, line: 0, precedence: 0, running: true }),
+            Box::new(WordMatcher { index: 0, precedence: 0, running: true }),
+            Box::new(IntegerMatcher { index: 0, precedence: 0, running: true }),
+            Box::new(FloatMatcher { index: 0, precedence: 0, dot: false, float: false, running: true }),
+            Box::new(SymbolMatcher { index: 0, precedence: 0, running: true }),
+        ]
+    );
+    
+    // Process tokens using the Iterator interface
+    for token in lexx {
+        println!("{}", token);
+    }
+}
+```
+
+### Custom Matchers
+
+You can create custom matchers by implementing the `Matcher` trait:
+
+```rust
+use lexx::matcher::{Matcher, MatcherResult};
+use lexx::token::{Token, TOKEN_TYPE_CUSTOM};
+use std::collections::HashMap;
+use std::fmt::Debug;
+
+// Define a custom token type
+const TOKEN_TYPE_HEX_COLOR: u16 = 200;
+
+#[derive(Debug)]
+struct HexColorMatcher {
+    index: usize,
+    precedence: u8,
+    running: bool,
+}
+
+impl Matcher for HexColorMatcher {
+    fn reset(&mut self, _ctx: &mut Box<HashMap<String, i32>>) {
+        self.index = 0;
+        self.running = true;
+    }
+
+    fn find_match(
+        &mut self,
+        oc: Option<char>,
+        value: &[char],
+        _ctx: &mut Box<HashMap<String, i32>>,
+    ) -> MatcherResult {
+        // Implementation for matching hex color codes
+        // ...
+    }
+
+    fn is_running(&self) -> bool {
+        self.running
+    }
+
+    fn precedence(&self) -> u8 {
+        self.precedence
+    }
+}
+```
 
 ## Performance
 
-Lexx is designed to be a high-performance tokenizer with minimal memory allocations. Benchmark results are automatically generated and published for each commit to the main branch.
-
-### Key Performance Metrics
+Lexx is optimized for high-performance tokenization:
 
 | Benchmark | Time |
 |-----------|------|
@@ -39,174 +133,59 @@ Lexx is designed to be a high-performance tokenizer with minimal memory allocati
 | UTF-8 sample (13 KB) | ~350 µs |
 | Large file (1.8 MB) | ~45 ms |
 
-These numbers represent performance on a standard GitHub Actions runner. Your results may vary depending on hardware.
+These benchmarks were measured on standard hardware. Your results may vary depending on your system specifications.
 
-### Performance Features
+### Performance Considerations
 
-- Zero-copy tokenization where possible
-- Pre-allocated buffers for token storage
-- Optimized matchers for common token types
-- Single-pass processing
+- Lexx uses a fixed-size buffer for token storage, specified as `Lexx<CAP>` where `CAP` is the maximum token size
+- If a token exceeds this size, Lexx will panic
+- Choose an appropriate buffer size for your use case to balance memory usage and token size limits
 
-### Benchmark Visualization
+## Installation
 
-Performance trends are tracked over time and can be viewed on the [GitHub Pages benchmark dashboard](https://YOUR_USERNAME.github.io/lexx/dev/bench/).
-
-## Usage
-
-Add `lexx` to your `Cargo.toml`:
+Add Lexx to your `Cargo.toml`:
 
 ```toml
 [dependencies]
 lexx = "0.1.0"
 ```
 
-### Basic Example
-
-```rust
-use lexx::{factories, Lexxer};
-use lexx::token::{TOKEN_TYPE_WORD, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_SYMBOL};
-
-// Create a tokenizer for a code-like syntax
-let mut lexer = factories::tokenize_code("if (x > 3.14) { return true; }");
-
-// Iterate through tokens
-for token_result in lexer {
-    match token_result {
-        Ok(Some(token)) => {
-            println!("Token: {}, Type: {}, Line: {}, Column: {}", 
-                      token.value, token.token_type, token.line, token.column);
-        },
-        Ok(None) => println!("End of input"),
-        Err(e) => println!("Error: {:?}", e),
-    }
-}
-```
-
-### Using Token Helper Methods
-
-```rust
-use lexx::{factories, Lexxer};
-
-let mut lexer = factories::tokenize_str("Hello 42 world!");
-
-while let Ok(Some(token)) = lexer.next_token() {
-    if token.is_word() {
-        println!("Found word: {}", token.value);
-    } else if token.is_integer() {
-        println!("Found number: {}", token.value);
-    } else if token.is_whitespace() {
-        println!("Found whitespace");
-    }
-}
-```
-
-### Custom Tokenizer with Builder Pattern
-
-```rust
-use lexx::{Lexx, Lexxer, input::InputString};
-use lexx::matcher::word::WordMatcher;
-use lexx::matcher::whitespace::WhitespaceMatcher;
-use lexx::matcher::symbol::SymbolMatcher;
-use lexx::matcher::exact::ExactMatcher;
-use lexx::token::TOKEN_TYPE_KEYWORD;
-
-let input = InputString::new("let x = 10;".to_string());
-let mut lexer = Lexx::<512>::new(Box::new(input), vec![])
-    .with_matcher(Box::new(WhitespaceMatcher::new()))
-    .with_matcher(Box::new(WordMatcher::new()))
-    .with_matcher(Box::new(SymbolMatcher::new()))
-    .with_matcher(Box::new(ExactMatcher::new("let", TOKEN_TYPE_KEYWORD)));
-
-// Use the lexer...
-```
-
-### Collecting Tokens
-
-```rust
-use lexx::{factories, Lexxer};
-use lexx::token::TOKEN_TYPE_SYMBOL;
-
-let mut lexer = factories::tokenize_code("let x = 10; let y = 20;");
-
-// Collect tokens until semicolon
-match lexer.collect_until(TOKEN_TYPE_SYMBOL) {
-    Ok(tokens) => {
-        println!("First statement has {} tokens", tokens.len());
-        
-        // The semicolon is still in the stream
-        if let Ok(Some(token)) = lexer.next_token() {
-            println!("Found delimiter: {}", token.value);
-        }
-    },
-    Err(e) => println!("Error: {:?}", e),
-}
-```
-
 ## Token Types
 
-The library defines several token types:
-- `TOKEN_TYPE_WHITESPACE` - Whitespace characters
-- `TOKEN_TYPE_WORD` - Word tokens (a-z, A-Z, _)
-- `TOKEN_TYPE_INTEGER` - Integer numbers
-- `TOKEN_TYPE_FLOAT` - Floating point numbers
-- `TOKEN_TYPE_SYMBOL` - Symbol characters
-- `TOKEN_TYPE_KEYWORD` - Reserved keywords
-- `TOKEN_TYPE_EXACT` - Exact string matches
+Lexx defines several standard token types:
 
-## Documentation
+- `TOKEN_TYPE_WHITESPACE` (3): Whitespace characters
+- `TOKEN_TYPE_WORD` (4): Word tokens (alphabetic characters)
+- `TOKEN_TYPE_INTEGER` (1): Integer numbers
+- `TOKEN_TYPE_FLOAT` (2): Floating point numbers
+- `TOKEN_TYPE_SYMBOL` (5): Symbol characters
+- `TOKEN_TYPE_EXACT` (6): Exact string matches
+- `TOKEN_TYPE_KEYWORD` (7): Reserved keywords
 
-For more detailed documentation, see the [API documentation](https://docs.rs/lexx).
+You can define custom token types starting from higher numbers (e.g., 100+) for your application-specific needs.
+
+## Input Sources
+
+Lexx supports multiple input sources through the `LexxInput` trait:
+
+- `InputString`: Tokenize from a String
+- `InputReader`: Tokenize from any source implementing `Read`
+
+You can implement custom input sources by implementing the `LexxInput` trait.
+
+## Error Handling
+
+Lexx returns `LexxError` in two cases:
+
+- `TokenNotFound`: No matcher could match the current input
+- `Error`: Some other error occurred during tokenization
+
+To successfully parse an entire input, ensure you have matchers that can handle all possible character sequences.
 
 ## License
 
 MIT License
 
-## Structure
+## Contributing
 
-Lexx consists of 4 main components:
-* `LexxInput` provides a stream of `char` characters
-* `Matchers` identify parts of a string, such as integers or symbols
-* `Token` is the result of a successful match
-* `Lexx` itself, orchestrating the tokenization
-
-## Functionality
-
-Lexx uses a [`LexxInput`](crate::input::LexxInput) to provide chars that are fed to
-[`Matcher`](crate::matcher::Matcher) instances until the longest match is found, if any. The
-match will be returned as a [`Token`](token::Token) instance, which includes the token type, matched string, and line/column information. Custom [`LexxInput`](crate::input::LexxInput) implementations are supported; built-in options include [`InputString`](crate::input::InputString) and [`InputReader`](crate::input::InputReader).
-
-Lexx implements [`Iterator`], so you can use it directly in a `for` loop.
-
-Custom [`Matcher`](crate::matcher::Matcher)s can also be created. Lexx provides:
-- [`WordMatcher`](crate::matcher_word::WordMatcher): matches alphabetic words
-- [`IntegerMatcher`](crate::matcher_integer::IntegerMatcher): matches integers
-- [`FloatMatcher`](crate::matcher_float::FloatMatcher): matches floats
-- [`ExactMatcher`](crate::matcher_exact::ExactMatcher): matches exactly specified strings (e.g., operators or delimiters)
-- [`SymbolMatcher`](crate::matcher_symbol::SymbolMatcher): matches all non-alphanumerics
-- [`KeywordMatcher`](crate::matcher_keyword::KeywordMatcher): matches specific words, but not substrings
-- [`WhitespaceMatcher`](crate::matcher_whitespace::WhitespaceMatcher): matches whitespace (spaces, tabs, newlines)
-
-Matchers can be given precedence, allowing a matcher to return its result even if another matcher has a longer match. For example, both the [`WordMatcher`](crate::matcher_word::WordMatcher) and [`KeywordMatcher`](crate::matcher_keyword::KeywordMatcher) can be used at the same time.
-
-Note: Matchers cannot find matches that start inside the valid matches of other matchers. For example, if matching `renewable`, the [`WordMatcher`](crate::matcher_word::WordMatcher) will consume the whole word, even if [`ExactMatcher`](crate::matcher_exact::ExactMatcher) is looking for `new` with higher precedence.
-
-To successfully parse an entire stream, Lexx must have a matcher capable of tokenizing every encountered collection of characters. If a match fails, Lexx will return `Err(TokenNotFound)` with the unmatched text.
-
-## Performance
-
-Lexx is highly optimized for speed:
-- On a large file (e.g., `Varney-the-Vampire.txt`, ~1.8MB), Lexx tokenizes the entire file in **~690 microseconds** per run (mean and median), with very low variance.
-- Benchmarks show stable and predictable performance, suitable for high-throughput or interactive use cases.
-
-### Running Benchmarks
-
-To run the benchmarks and measure performance:
-```sh
-cargo bench
-```
-Benchmark results (including mean and median timings) will be output in the `target/criterion` directory.
-
-## Panics
-
-For speed, Lexx does not dynamically allocate buffer space. In `Lexx<CAP>`, `CAP` is the maximum possible token size. If that size is exceeded, a panic will be thrown.
+Contributions are welcome! Please feel free to submit a Pull Request.
