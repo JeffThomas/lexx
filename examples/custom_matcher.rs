@@ -28,7 +28,7 @@ impl HexColorMatcher {
 
     /// Helper function to check if a character is a valid hex digit
     fn is_hex_digit(c: char) -> bool {
-        c.is_digit(16)
+        c.is_ascii_hexdigit()
     }
 
     /// Generate a token when a hex color has been matched
@@ -43,8 +43,8 @@ impl HexColorMatcher {
             return MatcherResult::Failed();
         }
 
-        for i in 1..self.index {
-            if !Self::is_hex_digit(value[i]) {
+        for c in value.iter().take(self.index).skip(1) {
+            if !Self::is_hex_digit(*c) {
                 return MatcherResult::Failed();
             }
         }
@@ -106,11 +106,11 @@ impl Matcher for HexColorMatcher {
                     // but we'll keep accepting characters if they're hex digits
                     if self.index <= 7 {
                         self.running = true;
-                        return MatcherResult::Running();
+                        MatcherResult::Running()
                     } else {
                         // We've gone beyond the maximum length for a hex color
                         self.running = false;
-                        return MatcherResult::Failed();
+                        MatcherResult::Failed()
                     }
                 } else {
                     // We've encountered a non-hex digit
@@ -118,10 +118,10 @@ impl Matcher for HexColorMatcher {
                     
                     // Check if we have a valid color code (#RGB or #RRGGBB)
                     if self.index == 4 || self.index == 7 {
-                        return self.generate_hex_color_token(value);
+                        self.generate_hex_color_token(value)
                     } else {
                         // Not a valid color code
-                        return MatcherResult::Failed();
+                        MatcherResult::Failed()
                     }
                 }
             }
