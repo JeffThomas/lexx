@@ -1,10 +1,13 @@
-use lexx::{Lexx, Lexxer};
 use lexx::input::InputString;
-use lexx::matcher::word::WordMatcher;
-use lexx::matcher::whitespace::WhitespaceMatcher;
-use lexx::matcher::symbol::SymbolMatcher;
 use lexx::matcher::exact::ExactMatcher;
-use lexx::token::{TOKEN_TYPE_WORD, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_INTEGER, TOKEN_TYPE_FLOAT, TOKEN_TYPE_EXACT};
+use lexx::matcher::symbol::SymbolMatcher;
+use lexx::matcher::whitespace::WhitespaceMatcher;
+use lexx::matcher::word::WordMatcher;
+use lexx::token::{
+    TOKEN_TYPE_EXACT, TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL,
+    TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD,
+};
+use lexx::{Lexx, Lexxer};
 
 // Define a special token type for our example
 const TOKEN_TYPE_EMAIL_DOMAIN: u16 = 100;
@@ -19,16 +22,30 @@ fn main() {
     let mut lexx = Lexx::<512>::new(
         Box::new(input),
         vec![
-            Box::new(WhitespaceMatcher { index: 0, column: 0, line: 0, precedence: 0, running: true }),
+            Box::new(WhitespaceMatcher {
+                index: 0,
+                column: 0,
+                line: 0,
+                precedence: 0,
+                running: true,
+            }),
             // Use ExactMatcher with high precedence to identify specific domains
             Box::new(ExactMatcher::build_exact_matcher(
                 vec!["example.com", "company.co.uk"],
                 TOKEN_TYPE_EMAIL_DOMAIN,
-                3 // High precedence to ensure it gets matched
+                3, // High precedence to ensure it gets matched
             )),
-            Box::new(WordMatcher { index: 0, precedence: 0, running: true }),
-            Box::new(SymbolMatcher { index: 0, precedence: 0, running: true }),
-        ]
+            Box::new(WordMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            }),
+            Box::new(SymbolMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            }),
+        ],
     );
 
     println!("Tokenizing: \"{}\"", text);
@@ -50,18 +67,16 @@ fn main() {
                         _ => "OTHER",
                     }
                 };
-                
-                println!("{:<15} {:<30} (line: {}, column: {})", 
-                    type_name, 
-                    token.value, 
-                    token.line, 
-                    token.column
+
+                println!(
+                    "{:<15} {:<30} (line: {}, column: {})",
+                    type_name, token.value, token.line, token.column
                 );
-            },
+            }
             Ok(None) => {
                 println!("\nEnd of input reached.");
                 break;
-            },
+            }
             Err(e) => {
                 println!("Error during tokenization: {}", e);
                 break;

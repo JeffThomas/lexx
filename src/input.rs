@@ -260,7 +260,6 @@ mod tests {
     use std::fs::File;
     use std::time::Instant;
 
-    use crate::{Lexx, Lexxer, LexxError};
     use crate::input::InputReader;
     use crate::matcher::float::FloatMatcher;
     use crate::matcher::integer::IntegerMatcher;
@@ -268,9 +267,10 @@ mod tests {
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::matcher::word::WordMatcher;
     use crate::token::{
-        TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE, 
-        TOKEN_TYPE_WORD, Token
+        Token, TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE,
+        TOKEN_TYPE_WORD,
     };
+    use crate::{Lexx, LexxError, Lexxer};
 
     #[test]
     fn lexx_parse_large_file() {

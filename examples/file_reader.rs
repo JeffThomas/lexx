@@ -1,13 +1,13 @@
+use lexx::input::InputReader;
+use lexx::matcher::integer::IntegerMatcher;
+use lexx::matcher::symbol::SymbolMatcher;
+use lexx::matcher::whitespace::WhitespaceMatcher;
+use lexx::matcher::word::WordMatcher;
+use lexx::token::TOKEN_TYPE_WORD;
+use lexx::{Lexx, Lexxer};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
-use lexx::{Lexx, Lexxer};
-use lexx::input::InputReader;
-use lexx::matcher::word::WordMatcher;
-use lexx::matcher::whitespace::WhitespaceMatcher;
-use lexx::matcher::symbol::SymbolMatcher;
-use lexx::matcher::integer::IntegerMatcher;
-use lexx::token::{TOKEN_TYPE_WORD};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Change this to your file path
@@ -23,11 +23,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut lexx = Lexx::<512>::new(
         Box::new(input),
         vec![
-            Box::new(WhitespaceMatcher { index: 0, column: 0, line: 0, precedence: 0, running: true }),
-            Box::new(WordMatcher { index: 0, precedence: 0, running: true }),
-            Box::new(IntegerMatcher { index: 0, precedence: 0, running: true }),
-            Box::new(SymbolMatcher { index: 0, precedence: 0, running: true }),
-        ]
+            Box::new(WhitespaceMatcher {
+                index: 0,
+                column: 0,
+                line: 0,
+                precedence: 0,
+                running: true,
+            }),
+            Box::new(WordMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            }),
+            Box::new(IntegerMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            }),
+            Box::new(SymbolMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            }),
+        ],
     );
 
     println!("Tokenizing file: {}", file_path.display());
@@ -42,14 +60,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         match lexx.next_token() {
             Ok(Some(token)) => {
                 total_tokens += 1;
-                
+
                 if token.token_type == TOKEN_TYPE_WORD {
                     word_count += 1;
-                    println!("Word {}: '{}' (line: {}, column: {})", 
-                        word_count, 
-                        token.value, 
-                        token.line, 
-                        token.column
+                    println!(
+                        "Word {}: '{}' (line: {}, column: {})",
+                        word_count, token.value, token.line, token.column
                     );
                 }
             }
@@ -64,7 +80,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    println!("\nProcessed {} tokens to find {} words.", total_tokens, word_count);
+    println!(
+        "\nProcessed {} tokens to find {} words.",
+        total_tokens, word_count
+    );
 
     Ok(())
 }

@@ -4,7 +4,7 @@
 ///
 /// This module is useful for lexers that need to identify and extract symbols (e.g., operators, punctuation) from text.
 use crate::matcher::{Matcher, MatcherResult};
-use crate::token::{TOKEN_TYPE_SYMBOL, Token};
+use crate::token::{Token, TOKEN_TYPE_SYMBOL};
 use std::collections::HashMap;
 
 /// The `SymbolMatcher` is a matcher that matches symbol tokens in the input stream.

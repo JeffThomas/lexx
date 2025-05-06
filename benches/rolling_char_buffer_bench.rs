@@ -93,7 +93,8 @@ fn bench_full_buffer_handling(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches,
+criterion_group!(
+    benches,
     bench_push_pop,
     bench_prefix_read,
     bench_extend_clear,

@@ -4,7 +4,7 @@
 ///
 /// This module is useful for lexers that need to identify and handle whitespace regions, which are often ignored or treated specially in tokenization.
 use crate::matcher::{Matcher, MatcherResult};
-pub use crate::token::{TOKEN_TYPE_WHITESPACE, Token};
+pub use crate::token::{Token, TOKEN_TYPE_WHITESPACE};
 use std::collections::HashMap;
 
 /// The WhitespaceMatcher matches any series of characters that are `is_whitespace()`.

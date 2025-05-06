@@ -1,4 +1,3 @@
-
 // Token types. These are not an enum so that they can be externally extended
 /// Token type Integer
 pub const TOKEN_TYPE_INTEGER: u16 = 1;

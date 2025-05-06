@@ -371,8 +371,8 @@ mod tests {
 
     #[test]
     fn example_test() {
-        use crate::Lexx;
         use crate::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
+        use crate::Lexx;
 
         let lexx_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
 

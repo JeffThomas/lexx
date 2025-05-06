@@ -387,8 +387,8 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
 
 #[cfg(test)]
 mod tests {
-    use crate::RollingCharBuffer;
     use crate::rolling_char_buffer::RollingCharBufferError;
+    use crate::RollingCharBuffer;
 
     #[test]
     fn test_buffer_is_empty() {

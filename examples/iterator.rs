@@ -1,10 +1,10 @@
-use lexx::Lexx;
 use lexx::input::InputString;
-use lexx::matcher::word::WordMatcher;
-use lexx::matcher::whitespace::WhitespaceMatcher;
-use lexx::matcher::symbol::SymbolMatcher;
-use lexx::matcher::integer::IntegerMatcher;
 use lexx::matcher::float::FloatMatcher;
+use lexx::matcher::integer::IntegerMatcher;
+use lexx::matcher::symbol::SymbolMatcher;
+use lexx::matcher::whitespace::WhitespaceMatcher;
+use lexx::matcher::word::WordMatcher;
+use lexx::Lexx;
 
 fn main() {
     // Create a simple input string
@@ -15,12 +15,36 @@ fn main() {
     let lexx = Lexx::<512>::new(
         Box::new(input),
         vec![
-            Box::new(WhitespaceMatcher { index: 0, column: 0, line: 0, precedence: 0, running: true }),
-            Box::new(WordMatcher { index: 0, precedence: 0, running: true }),
-            Box::new(IntegerMatcher { index: 0, precedence: 0, running: true }),
-            Box::new(FloatMatcher { index: 0, precedence: 0, dot: false, float: false, running: true }),
-            Box::new(SymbolMatcher { index: 0, precedence: 0, running: true }),
-        ]
+            Box::new(WhitespaceMatcher {
+                index: 0,
+                column: 0,
+                line: 0,
+                precedence: 0,
+                running: true,
+            }),
+            Box::new(WordMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            }),
+            Box::new(IntegerMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            }),
+            Box::new(FloatMatcher {
+                index: 0,
+                precedence: 0,
+                dot: false,
+                float: false,
+                running: true,
+            }),
+            Box::new(SymbolMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            }),
+        ],
     );
 
     // Process tokens using the Iterator interface

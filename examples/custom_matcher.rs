@@ -1,7 +1,7 @@
-use lexx::{Lexx, Lexxer};
 use lexx::input::InputString;
 use lexx::matcher::{Matcher, MatcherResult};
-use lexx::token::{Token, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD, TOKEN_TYPE_SYMBOL};
+use lexx::token::{Token, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD};
+use lexx::{Lexx, Lexxer};
 use std::collections::HashMap;
 use std::fmt::Debug;
 
@@ -56,12 +56,12 @@ impl HexColorMatcher {
 
         // Create the token
         let token_value: String = value[0..self.index].iter().collect();
-        
+
         MatcherResult::Matched(Token {
             value: token_value,
             token_type: TOKEN_TYPE_HEX_COLOR,
             len: self.index,
-            line: 0,  // This will be set by the Lexx tokenizer
+            line: 0,   // This will be set by the Lexx tokenizer
             column: 0, // This will be set by the Lexx tokenizer
             precedence: self.precedence,
         })
@@ -84,7 +84,7 @@ impl Matcher for HexColorMatcher {
             None => {
                 self.running = false;
                 self.generate_hex_color_token(value)
-            },
+            }
             Some(c) => {
                 // First character must be a hash
                 if self.index == 0 {
@@ -97,11 +97,11 @@ impl Matcher for HexColorMatcher {
                         return MatcherResult::Failed();
                     }
                 }
-                
+
                 // After the hash, we need hex digits
                 if Self::is_hex_digit(c) {
                     self.index += 1;
-                    
+
                     // If we've reached a valid length (4 or 7), we have a potential match
                     // but we'll keep accepting characters if they're hex digits
                     if self.index <= 7 {
@@ -115,7 +115,7 @@ impl Matcher for HexColorMatcher {
                 } else {
                     // We've encountered a non-hex digit
                     self.running = false;
-                    
+
                     // Check if we have a valid color code (#RGB or #RRGGBB)
                     if self.index == 4 || self.index == 7 {
                         self.generate_hex_color_token(value)
@@ -141,31 +141,41 @@ fn main() {
     // Sample text with hex color codes
     let text = "The background color is #FF5500 and the text color is #123. Invalid codes: #GGHHII, #12, #1234567.";
     let input = InputString::new(text.to_string());
-    
+
     // Create a Lexx tokenizer with our custom HexColorMatcher
     let mut lexx = Lexx::<512>::new(
         Box::new(input),
         vec![
-            Box::new(lexx::matcher::whitespace::WhitespaceMatcher { 
-                index: 0, column: 0, line: 0, precedence: 0, running: true 
+            Box::new(lexx::matcher::whitespace::WhitespaceMatcher {
+                index: 0,
+                column: 0,
+                line: 0,
+                precedence: 0,
+                running: true,
             }),
             // Our custom matcher with high precedence to ensure it gets matched before symbols
             Box::new(HexColorMatcher::new(3)),
-            Box::new(lexx::matcher::word::WordMatcher { 
-                index: 0, precedence: 0, running: true 
+            Box::new(lexx::matcher::word::WordMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
             }),
             Box::new(lexx::matcher::integer::IntegerMatcher {
-                index: 0, precedence: 0, running: true
+                index: 0,
+                precedence: 0,
+                running: true,
             }),
-            Box::new(lexx::matcher::symbol::SymbolMatcher { 
-                index: 0, precedence: 0, running: true 
+            Box::new(lexx::matcher::symbol::SymbolMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
             }),
-        ]
+        ],
     );
-    
+
     println!("Tokenizing: \"{}\"", text);
     println!("{}", "-".repeat(70));
-    
+
     loop {
         match lexx.next_token() {
             Ok(Some(token)) => {
@@ -177,18 +187,16 @@ fn main() {
                     lexx::token::TOKEN_TYPE_INTEGER => "INTEGER",
                     _ => "OTHER",
                 };
-                
-                println!("{:<15} {:<30} (line: {}, column: {})", 
-                    type_name, 
-                    token.value, 
-                    token.line, 
-                    token.column
+
+                println!(
+                    "{:<15} {:<30} (line: {}, column: {})",
+                    type_name, token.value, token.line, token.column
                 );
-            },
+            }
             Ok(None) => {
                 println!("\nEnd of input reached.");
                 break;
-            },
+            }
             Err(e) => {
                 println!("Error during tokenization: {}", e);
                 break;

@@ -1,7 +1,7 @@
 /// The integer matcher matches integer numbers. To qualify as integer the numbers must
 /// start and end with a numeric digit.
 use crate::matcher::{Matcher, MatcherResult};
-use crate::token::{TOKEN_TYPE_INTEGER, Token};
+use crate::token::{Token, TOKEN_TYPE_INTEGER};
 use std::collections::HashMap;
 
 ///

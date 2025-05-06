@@ -1,15 +1,15 @@
-use std::fs::{self, File};
-use std::io::BufReader;
 use criterion::{criterion_group, criterion_main, Criterion};
 use lexx::input::InputReader;
 use lexx::matcher::exact::ExactMatcher;
+use lexx::matcher::float::FloatMatcher;
+use lexx::matcher::integer::IntegerMatcher;
+use lexx::matcher::keyword::KeywordMatcher;
 use lexx::matcher::symbol::SymbolMatcher;
 use lexx::matcher::whitespace::WhitespaceMatcher;
 use lexx::matcher::word::WordMatcher;
 use lexx::{Lexx, Lexxer};
-use lexx::matcher::float::FloatMatcher;
-use lexx::matcher::integer::IntegerMatcher;
-use lexx::matcher::keyword::KeywordMatcher;
+use std::fs::{self, File};
+use std::io::BufReader;
 
 const DIR: &str = r"C:\Users\jefft\OneDrive\Documents\gutenburg\bucket";
 
@@ -17,13 +17,47 @@ fn make_default_lexx<R: std::io::Read + std::fmt::Debug + 'static>(reader: R) ->
     Lexx::new(
         Box::new(InputReader::new(reader)),
         vec![
-            Box::new(KeywordMatcher::build_matcher_keyword(vec!["let", "fn", "if", "else", "match", "for", "in", "while", "return"], 20, 2)),
-            Box::new(ExactMatcher::build_exact_matcher(vec!["==", "!=", "<=", ">=", "&&", "||", "=>", "->", "::"], 10, 1)),
-            Box::new(FloatMatcher { index: 0, precedence: 0, dot: false, float: false, running: true }),
-            Box::new(IntegerMatcher { index: 0, precedence: 0, running: true }),
-            Box::new(SymbolMatcher { index: 0, precedence: 0, running: true }),
-            Box::new(WordMatcher { index: 0, precedence: 0, running: true }),
-            Box::new(WhitespaceMatcher { index: 0, column: 0, line: 0, precedence: 0, running: true }),
+            Box::new(KeywordMatcher::build_matcher_keyword(
+                vec![
+                    "let", "fn", "if", "else", "match", "for", "in", "while", "return",
+                ],
+                20,
+                2,
+            )),
+            Box::new(ExactMatcher::build_exact_matcher(
+                vec!["==", "!=", "<=", ">=", "&&", "||", "=>", "->", "::"],
+                10,
+                1,
+            )),
+            Box::new(FloatMatcher {
+                index: 0,
+                precedence: 0,
+                dot: false,
+                float: false,
+                running: true,
+            }),
+            Box::new(IntegerMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            }),
+            Box::new(SymbolMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            }),
+            Box::new(WordMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            }),
+            Box::new(WhitespaceMatcher {
+                index: 0,
+                column: 0,
+                line: 0,
+                precedence: 0,
+                running: true,
+            }),
         ],
     )
 }
@@ -54,7 +88,6 @@ fn bench_parse_all_txt_files(_c: &mut Criterion) {
     }
     println!("Total tokens parsed: {}", total_tokens);
 }
-
 
 // fn bench_parse_all_txt_files(c: &mut Criterion) {
 //     let mut paths = fs::read_dir(DIR).expect("Could not read directory");
