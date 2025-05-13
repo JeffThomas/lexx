@@ -422,7 +422,7 @@ mod tests {
             Ok(Some(t)) => {
                 assert_eq!(t.value, "dog");
                 assert_eq!(t.line, 2);
-                assert_eq!(t.column, 26);
+                assert_eq!(t.column, 25);
             }
             Ok(None) => {
                 unreachable!("Should not hit None");

@@ -118,3 +118,264 @@ impl FloatMatcher {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::input::InputString;
+    use crate::matcher::float::FloatMatcher;
+    use crate::matcher::symbol::SymbolMatcher;
+    use crate::matcher::whitespace::WhitespaceMatcher;
+    use crate::{Lexx, LexxError, Lexxer};
+    use crate::matcher::integer::IntegerMatcher;
+    use crate::matcher::Matcher;
+    use crate::token::TOKEN_TYPE_FLOAT;
+
+    #[test]
+    fn matcher_float_matches_simple_float() {
+        let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
+            Box::new(InputString::new(String::from("1.0"))),
+            vec![Box::new(FloatMatcher {
+                index: 0,
+                precedence: 0,
+                dot: false,
+                float: false,
+                running: true,
+            })],
+        ));
+
+        match lexx.next_token() {
+            Err(e) => match e {
+                LexxError::TokenNotFound(_) => {
+                    unreachable!("Should not have failed parsing file");
+                }
+                LexxError::Error(_) => {
+                    unreachable!("Should not have failed parsing file");
+                }
+            },
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "1.0");
+                assert_eq!(t.token_type, TOKEN_TYPE_FLOAT);
+            }
+            Ok(None) => {
+                unreachable!("Should not hit None");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_float_matches_decimal_float() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("0.012345"))),
+            vec![Box::new(FloatMatcher {
+                index: 0,
+                precedence: 0,
+                dot: false,
+                float: false,
+                running: true,
+            })],
+        );
+
+        match lexx.next_token() {
+            Err(e) => match e {
+                LexxError::TokenNotFound(_) => {
+                    unreachable!("Should not have failed parsing file");
+                }
+                LexxError::Error(_) => {
+                    unreachable!("Should not have failed parsing file");
+                }
+            },
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "0.012345");
+                assert_eq!(t.token_type, TOKEN_TYPE_FLOAT);
+            }
+            Ok(None) => {
+                unreachable!("Should not hit None");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_float_matches_leading_zeros() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("00.00"))),
+            vec![Box::new(FloatMatcher {
+                index: 0,
+                precedence: 0,
+                dot: false,
+                float: false,
+                running: true,
+            })],
+        );
+
+        match lexx.next_token() {
+            Err(e) => match e {
+                LexxError::TokenNotFound(_) => {
+                    unreachable!("Should not have failed parsing file");
+                }
+                LexxError::Error(_) => {
+                    unreachable!("Should not have failed parsing file");
+                }
+            },
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "00.00");
+                assert_eq!(t.token_type, TOKEN_TYPE_FLOAT);
+            }
+            Ok(None) => {
+                unreachable!("Should not hit None");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_float_does_not_match_dot_first() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from(".9"))),
+            vec![
+                Box::new(FloatMatcher {
+                    index: 0,
+                    precedence: 0,
+                    dot: false,
+                    float: false,
+                    running: true,
+                }),
+                Box::new(SymbolMatcher {
+                    index: 0,
+                    precedence: 0,
+                    running: true,
+                }),
+            ],
+        );
+
+        // Should match the dot as a symbol
+        match lexx.next_token() {
+            Ok(Some(t)) => {
+                assert_eq!(t.value, ".");
+                assert_eq!(t.token_type, crate::token::TOKEN_TYPE_SYMBOL);
+            }
+            _ => {
+                unreachable!("Should have matched a symbol");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_float_does_not_match_dot_last() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("4."))),
+            vec![
+                Box::new(FloatMatcher {
+                    index: 0,
+                    precedence: 0,
+                    dot: false,
+                    float: false,
+                    running: true,
+                }),
+                Box::new(SymbolMatcher {
+                    index: 0,
+                    precedence: 0,
+                    running: true,
+                }),
+                Box::new(IntegerMatcher {
+                    index: 0,
+                    precedence: 0,
+                    running: true,
+                }),
+            ],
+        );
+
+        // Should not match as a float
+        match lexx.next_token() {
+            Ok(Some(t)) => {
+                assert_ne!(t.token_type, TOKEN_TYPE_FLOAT);
+            }
+            _ => {
+                unreachable!("Should have matched something");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_float_matches_multiple() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("1.0 2.5 3.14"))),
+            vec![
+                Box::new(FloatMatcher {
+                    index: 0,
+                    precedence: 0,
+                    dot: false,
+                    float: false,
+                    running: true,
+                }),
+                Box::new(WhitespaceMatcher {
+                    index: 0,
+                    column: 0,
+                    line: 0,
+                    precedence: 0,
+                    running: true,
+                }),
+            ],
+        );
+
+        // First float
+        match lexx.next_token() {
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "1.0");
+                assert_eq!(t.token_type, TOKEN_TYPE_FLOAT);
+            }
+            _ => {
+                unreachable!("Should have matched a float");
+            }
+        }
+
+        // Whitespace
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == crate::token::TOKEN_TYPE_WHITESPACE)
+        );
+
+        // Second float
+        match lexx.next_token() {
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "2.5");
+                assert_eq!(t.token_type, TOKEN_TYPE_FLOAT);
+            }
+            _ => {
+                unreachable!("Should have matched a float");
+            }
+        }
+
+        // Whitespace
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == crate::token::TOKEN_TYPE_WHITESPACE)
+        );
+
+        // Third float
+        match lexx.next_token() {
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "3.14");
+                assert_eq!(t.token_type, TOKEN_TYPE_FLOAT);
+            }
+            _ => {
+                unreachable!("Should have matched a float");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_float_resets_properly() {
+        let mut matcher = FloatMatcher {
+            index: 5,
+            precedence: 0,
+            dot: true,
+            float: true,
+            running: false,
+        };
+        
+        let mut ctx = Box::new(std::collections::HashMap::<String, i32>::new());
+        matcher.reset(&mut ctx);
+        
+        assert_eq!(matcher.index, 0);
+        assert_eq!(matcher.dot, false);
+        assert_eq!(matcher.float, false);
+        assert_eq!(matcher.running, true);
+    }
+}

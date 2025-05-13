@@ -175,7 +175,7 @@ impl ExactMatcher {
                 let i = self.found.unwrap();
                 let target = &self.targets.get(i).unwrap().target;
                 let token_value: String = target.clone().into_iter().collect();
-                let len = token_value.len();
+                let len = target.len();
                 MatcherResult::Matched(Token {
                     value: token_value,
                     token_type: self.token_type,
@@ -197,6 +197,7 @@ mod tests {
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::token::TOKEN_TYPE_EXACT;
     use crate::{Lexx, LexxError, Lexxer};
+    use crate::matcher::{Matcher, MatcherResult};
 
     #[test]
     fn matcher_exact_matches_word() {
@@ -331,7 +332,7 @@ mod tests {
             Ok(Some(t)) => {
                 assert_eq!(t.value, "dog");
                 assert_eq!(t.line, 1);
-                assert_eq!(t.column, 42);
+                assert_eq!(t.column, 39);
             }
             Ok(None) => {
                 unreachable!("Should not hit None");
@@ -416,5 +417,118 @@ mod tests {
         assert!(
             matches!(lexx.next_token(), Ok(Some(t)) if t.value == "d$rrr" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 15)
         );
+    }
+    
+    #[test]
+    fn test_overlapping_matches_with_precedence() {
+        // Test that when multiple matches are possible, the one with higher precedence wins
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("abcdef"))),
+            vec![
+                Box::new(ExactMatcher::build_exact_matcher(
+                    vec!["abc"],
+                    TOKEN_TYPE_EXACT,
+                    1, // Higher precedence
+                )),
+                Box::new(ExactMatcher::build_exact_matcher(
+                    vec!["abcdef"],
+                    TOKEN_TYPE_EXACT + 1, // Different token type to distinguish
+                    0, // Lower precedence
+                )),
+            ],
+        );
+
+        // The matcher with higher precedence should win, even though the other would match more
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "abc" && t.token_type == TOKEN_TYPE_EXACT));
+        
+        // The remaining text should not match anything
+        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
+    }
+
+    #[test]
+    fn test_case_sensitivity() {
+        // Test that matching is case-sensitive
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("The THE the"))),
+            vec![Box::new(ExactMatcher::build_exact_matcher(
+                vec!["The", "the"],
+                TOKEN_TYPE_EXACT,
+                0,
+            ))],
+        );
+
+        // Should match "The" exactly
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "The" && t.token_type == TOKEN_TYPE_EXACT));
+        
+        // "THE" is not in the target list, so it should not be matched
+        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
+    }
+
+    #[test]
+    fn test_unicode_character_handling() {
+        // Test that Unicode characters are handled correctly
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("こんにちは世界"))),
+            vec![Box::new(ExactMatcher::build_exact_matcher(
+                vec!["こんにちは", "世界"],
+                TOKEN_TYPE_EXACT,
+                0,
+            ))],
+        );
+
+        // Should match "こんにちは" exactly
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "こんにちは" && t.token_type == TOKEN_TYPE_EXACT));
+
+        // Should match "世界" exactly
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "世界" && t.token_type == TOKEN_TYPE_EXACT));
+        
+        // No more tokens
+        assert!(matches!(lexx.next_token(), Ok(None)));
+    }
+
+    #[test]
+    fn test_reset_functionality() {
+        use std::collections::HashMap;
+        
+        // Test that the reset function properly resets the matcher state
+        let mut matcher = ExactMatcher::build_exact_matcher(
+            vec!["abc", "def"],
+            TOKEN_TYPE_EXACT,
+            0,
+        );
+        
+        // Simulate partial matching
+        let mut ctx = Box::new(HashMap::new());
+        assert!(matches!(matcher.find_match(Some('a'), &[], &mut ctx), MatcherResult::Running()));
+        assert!(matches!(matcher.find_match(Some('b'), &[], &mut ctx), MatcherResult::Running()));
+        
+        // Now reset
+        matcher.reset(&mut ctx);
+        
+        // Verify that the matcher state has been reset
+        assert_eq!(matcher.index, 0);
+        assert_eq!(matcher.found, None);
+        assert!(matcher.running);
+        
+        // All targets should be matching again
+        for target in matcher.targets.iter() {
+            assert!(target.matching);
+        }
+    }
+
+    #[test]
+    fn test_empty_targets_list() {
+        // Test behavior with an empty targets list
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("abc"))),
+            vec![Box::new(ExactMatcher::build_exact_matcher(
+                vec![],
+                TOKEN_TYPE_EXACT,
+                0,
+            ))],
+        );
+
+        // Should fail to match anything with an empty targets list
+        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
     }
 }

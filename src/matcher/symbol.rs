@@ -100,3 +100,262 @@ impl SymbolMatcher {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::input::InputString;
+    use crate::matcher::symbol::SymbolMatcher;
+    use crate::matcher::whitespace::WhitespaceMatcher;
+    use crate::matcher::Matcher;
+    use crate::{Lexx, LexxError, Lexxer};
+    use crate::token::TOKEN_TYPE_SYMBOL;
+
+    #[test]
+    fn matcher_symbol_matches_single_symbol() {
+        let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
+            Box::new(InputString::new(String::from("@"))),
+            vec![Box::new(SymbolMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            })],
+        ));
+
+        match lexx.next_token() {
+            Err(e) => match e {
+                LexxError::TokenNotFound(_) => {
+                    unreachable!("Should not have failed parsing file");
+                }
+                LexxError::Error(_) => {
+                    unreachable!("Should not have failed parsing file");
+                }
+            },
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "@");
+                assert_eq!(t.token_type, TOKEN_TYPE_SYMBOL);
+            }
+            Ok(None) => {
+                unreachable!("Should not hit None");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_symbol_matches_multiple_symbols() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("!@#$%^&*"))),
+            vec![Box::new(SymbolMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            })],
+        );
+
+        match lexx.next_token() {
+            Err(e) => match e {
+                LexxError::TokenNotFound(_) => {
+                    unreachable!("Should not have failed parsing file");
+                }
+                LexxError::Error(_) => {
+                    unreachable!("Should not have failed parsing file");
+                }
+            },
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "!@#$%^&*");
+                assert_eq!(t.token_type, TOKEN_TYPE_SYMBOL);
+            }
+            Ok(None) => {
+                unreachable!("Should not hit None");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_symbol_stops_at_alphanumeric() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("@#$abc"))),
+            vec![Box::new(SymbolMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            })],
+        );
+
+        match lexx.next_token() {
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "@#$");
+                assert_eq!(t.token_type, TOKEN_TYPE_SYMBOL);
+            }
+            _ => {
+                unreachable!("Should have matched symbols");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_symbol_stops_at_whitespace() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("@#$ %^&"))),
+            vec![
+                Box::new(SymbolMatcher {
+                    index: 0,
+                    precedence: 0,
+                    running: true,
+                }),
+                Box::new(WhitespaceMatcher {
+                    index: 0,
+                    column: 0,
+                    line: 0,
+                    precedence: 0,
+                    running: true,
+                }),
+            ],
+        );
+
+        // First symbol group
+        match lexx.next_token() {
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "@#$");
+                assert_eq!(t.token_type, TOKEN_TYPE_SYMBOL);
+            }
+            _ => {
+                unreachable!("Should have matched symbols");
+            }
+        }
+
+        // Whitespace
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == crate::token::TOKEN_TYPE_WHITESPACE)
+        );
+
+        // Second symbol group
+        match lexx.next_token() {
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "%^&");
+                assert_eq!(t.token_type, TOKEN_TYPE_SYMBOL);
+            }
+            _ => {
+                unreachable!("Should have matched symbols");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_symbol_handles_empty_input() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from(""))),
+            vec![Box::new(SymbolMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            })],
+        );
+
+        // Should return None for empty input
+        assert!(matches!(lexx.next_token(), Ok(None)));
+    }
+
+    #[test]
+    fn matcher_symbol_handles_non_symbol_input() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("abc123"))),
+            vec![Box::new(SymbolMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            })],
+        );
+
+        // Should fail to match anything
+        match lexx.next_token() {
+            Err(LexxError::TokenNotFound(_)) => {
+                // This is expected
+            }
+            _ => {
+                unreachable!("Should have failed to match");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_symbol_resets_properly() {
+        let mut matcher = SymbolMatcher {
+            index: 5,
+            precedence: 0,
+            running: false,
+        };
+        
+        let mut ctx = Box::new(std::collections::HashMap::<String, i32>::new());
+        matcher.reset(&mut ctx);
+        
+        assert_eq!(matcher.index, 0);
+        assert_eq!(matcher.running, true);
+    }
+
+    #[test]
+    fn matcher_symbol_returns_correct_token_type() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("+-*/"))),
+            vec![Box::new(SymbolMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            })],
+        );
+
+        match lexx.next_token() {
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "+-*/");
+                assert_eq!(t.token_type, TOKEN_TYPE_SYMBOL);
+                assert_eq!(t.precedence, 0);
+            }
+            _ => {
+                unreachable!("Should have matched symbols");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_symbol_respects_precedence() {
+        let custom_precedence = 5;
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("++"))),
+            vec![Box::new(SymbolMatcher {
+                index: 0,
+                precedence: custom_precedence,
+                running: true,
+            })],
+        );
+
+        match lexx.next_token() {
+            Ok(Some(t)) => {
+                assert_eq!(t.precedence, custom_precedence);
+            }
+            _ => {
+                unreachable!("Should have matched symbols");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_symbol_handles_unicode_symbols() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("§¶†‡"))),
+            vec![Box::new(SymbolMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            })],
+        );
+
+        match lexx.next_token() {
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "§¶†‡");
+                assert_eq!(t.token_type, TOKEN_TYPE_SYMBOL);
+            }
+            _ => {
+                unreachable!("Should have matched symbols");
+            }
+        }
+    }
+}

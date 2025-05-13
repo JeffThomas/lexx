@@ -110,6 +110,7 @@ mod tests {
     use crate::matcher::word::WordMatcher;
     use crate::token::TOKEN_TYPE_WORD;
     use crate::{Lexx, LexxError, Lexxer};
+    use crate::matcher::Matcher;
 
     #[test]
     fn matcher_word_matches_word() {
@@ -386,5 +387,206 @@ mod tests {
                 unreachable!("should not have matched 5");
             }
         }
+    }
+
+    #[test]
+    fn test_word_with_unicode_letters() {
+        // Test that the WordMatcher correctly handles Unicode alphabetic characters
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("résumé привет こんにちは"))),
+            vec![
+                Box::new(WordMatcher {
+                    index: 0,
+                    precedence: 0,
+                    running: true,
+                }),
+                Box::new(WhitespaceMatcher {
+                    index: 0,
+                    column: 0,
+                    line: 0,
+                    precedence: 0,
+                    running: true,
+                }),
+            ],
+        );
+
+        // Should match "résumé" (French word with accents)
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "résumé" && t.token_type == TOKEN_TYPE_WORD));
+        
+        // Should match whitespace
+        assert!(matches!(lexx.next_token(), Ok(Some(_))));
+        
+        // Should match "привет" (Russian word)
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "привет" && t.token_type == TOKEN_TYPE_WORD));
+        
+        // Should match whitespace
+        assert!(matches!(lexx.next_token(), Ok(Some(_))));
+        
+        // Should match "こんにちは" (Japanese word)
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "こんにちは" && t.token_type == TOKEN_TYPE_WORD));
+        
+        // No more tokens
+        assert!(matches!(lexx.next_token(), Ok(None)));
+    }
+
+    #[test]
+    fn test_word_with_apostrophes() {
+        // Some languages consider apostrophes part of words, but our implementation doesn't
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("don't can't I'll"))),
+            vec![
+                Box::new(WordMatcher {
+                    index: 0,
+                    precedence: 0,
+                    running: true,
+                }),
+                Box::new(WhitespaceMatcher {
+                    index: 0,
+                    column: 0,
+                    line: 0,
+                    precedence: 0,
+                    running: true,
+                }),
+            ],
+        );
+
+        // Should match "don" but not the apostrophe
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "don" && t.token_type == TOKEN_TYPE_WORD));
+        
+        // Should fail on apostrophe
+        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
+        
+        // Should match "t"
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "t" && t.token_type == TOKEN_TYPE_WORD));
+        
+        // Should match whitespace
+        assert!(matches!(lexx.next_token(), Ok(Some(_))));
+        
+        // Similar pattern for "can't"
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "can" && t.token_type == TOKEN_TYPE_WORD));
+        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "t" && t.token_type == TOKEN_TYPE_WORD));
+    }
+
+    #[test]
+    fn test_word_with_mixed_content() {
+        // Test words with mixed content (letters, numbers, symbols)
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("abc123 def!ghi"))),
+            vec![
+                Box::new(WordMatcher {
+                    index: 0,
+                    precedence: 0,
+                    running: true,
+                }),
+                Box::new(WhitespaceMatcher {
+                    index: 0,
+                    column: 0,
+                    line: 0,
+                    precedence: 0,
+                    running: true,
+                }),
+            ],
+        );
+
+        // Should match "abc" but not the numbers
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "abc" && t.token_type == TOKEN_TYPE_WORD));
+        
+        // Should fail on numbers
+        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
+        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
+        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
+        
+        // Should match whitespace
+        assert!(matches!(lexx.next_token(), Ok(Some(_))));
+        
+        // Should match "def" but not the exclamation mark
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "def" && t.token_type == TOKEN_TYPE_WORD));
+        
+        // Should fail on exclamation mark
+        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
+        
+        // Should match "ghi"
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "ghi" && t.token_type == TOKEN_TYPE_WORD));
+    }
+
+    #[test]
+    fn test_word_with_precedence() {
+        // Test that precedence is respected when multiple matchers could match
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("keyword"))),
+            vec![
+                // Lower precedence word matcher
+                Box::new(WordMatcher {
+                    index: 0,
+                    precedence: 0,
+                    running: true,
+                }),
+                // Higher precedence exact matcher for the same word
+                Box::new(crate::matcher::exact::ExactMatcher::build_exact_matcher(
+                    vec!["keyword"],
+                    crate::token::TOKEN_TYPE_EXACT,
+                    1, // Higher precedence
+                )),
+            ],
+        );
+
+        // The exact matcher should win due to higher precedence
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "keyword" && t.token_type == crate::token::TOKEN_TYPE_EXACT));
+    }
+
+    #[test]
+    fn test_word_at_end_of_input() {
+        // Test that a word at the end of input is properly matched
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("end"))),
+            vec![Box::new(WordMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            })],
+        );
+
+        // Should match "end"
+        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "end" && t.token_type == TOKEN_TYPE_WORD));
+        
+        // No more tokens
+        assert!(matches!(lexx.next_token(), Ok(None)));
+    }
+
+    #[test]
+    fn test_reset_functionality() {
+        use std::collections::HashMap;
+        
+        // Test that the reset function properly resets the matcher state
+        let mut matcher = WordMatcher {
+            index: 10, // Simulate some previous matching
+            precedence: 0,
+            running: false,
+        };
+        
+        // Reset the matcher
+        let mut ctx = Box::new(HashMap::new());
+        matcher.reset(&mut ctx);
+         
+        // Verify that the matcher state has been reset
+        assert_eq!(matcher.index, 0);
+        assert!(matcher.running);
+    }
+
+    #[test]
+    fn test_empty_input() {
+        // Test behavior with empty input
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from(""))),
+            vec![Box::new(WordMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            })],
+        );
+
+        // Should return None for empty input
+        assert!(matches!(lexx.next_token(), Ok(None)));
     }
 }

@@ -615,4 +615,156 @@ mod tests {
         assert_eq!(rb.len(), 0);
         assert!(rb.is_empty());
     }
+    
+    #[test]
+    fn test_single_capacity_buffer() {
+        let mut rb = RollingCharBuffer::<1>::new();
+        assert_eq!(rb.push('a'), Ok(()));
+        assert_eq!(rb.len(), 1);
+        assert!(rb.is_full());
+        assert_eq!(rb.push('b'), Err(RollingCharBufferError::BufferFullError));
+        assert_eq!(rb.read(), Ok('a'));
+        assert!(rb.is_empty());
+    }
+    
+    #[test]
+    fn test_buffer_pop_operations() {
+        let mut rb = RollingCharBuffer::<5>::new();
+
+        // Fill buffer
+        assert_eq!(rb.push('a'), Ok(()));
+        assert_eq!(rb.push('b'), Ok(()));
+        assert_eq!(rb.push('c'), Ok(()));
+
+        // Pop from end (LIFO)
+        assert_eq!(rb.pop(), Ok('c'));
+        assert_eq!(rb.pop(), Ok('b'));
+        assert_eq!(rb.pop(), Ok('a'));
+        assert_eq!(rb.pop(), Err(RollingCharBufferError::BufferEmptyError));
+
+        // Refill and test mixed operations
+        assert_eq!(rb.push('d'), Ok(()));
+        assert_eq!(rb.push('e'), Ok(()));
+        assert_eq!(rb.read(), Ok('d')); // Read from front
+        assert_eq!(rb.pop(), Ok('e'));  // Pop from end
+        assert!(rb.is_empty());
+    }
+    
+    #[test]
+    fn test_buffer_wrap_around() {
+        let mut rb = RollingCharBuffer::<3>::new();
+
+        // Fill buffer
+        assert_eq!(rb.push('a'), Ok(()));
+        assert_eq!(rb.push('b'), Ok(()));
+        assert_eq!(rb.push('c'), Ok(()));
+
+        // Read one to make space
+        assert_eq!(rb.read(), Ok('a'));
+
+        // Push one more to cause wrap-around
+        assert_eq!(rb.push('d'), Ok(()));
+
+        // Verify contents after wrap-around
+        assert_eq!(rb.read(), Ok('b'));
+        assert_eq!(rb.read(), Ok('c'));
+        assert_eq!(rb.read(), Ok('d'));
+        assert!(rb.is_empty());
+    }
+    
+    #[test]
+    fn test_alternating_push_pop() {
+        let mut rb = RollingCharBuffer::<3>::new();
+
+        assert_eq!(rb.push('a'), Ok(()));
+        assert_eq!(rb.pop(), Ok('a'));
+        assert_eq!(rb.push('b'), Ok(()));
+        assert_eq!(rb.pop(), Ok('b'));
+        assert_eq!(rb.push('c'), Ok(()));
+        assert_eq!(rb.push('d'), Ok(()));
+        assert_eq!(rb.pop(), Ok('d'));
+        assert_eq!(rb.pop(), Ok('c'));
+        assert!(rb.is_empty());
+    }
+
+    #[test]
+    fn test_alternating_prefix_read() {
+        let mut rb = RollingCharBuffer::<3>::new();
+
+        assert_eq!(rb.prefix('a'), Ok(()));
+        assert_eq!(rb.read(), Ok('a'));
+        assert_eq!(rb.prefix('b'), Ok(()));
+        assert_eq!(rb.prefix('c'), Ok(()));
+        assert_eq!(rb.read(), Ok('c'));
+        assert_eq!(rb.read(), Ok('b'));
+        assert!(rb.is_empty());
+    }
+
+    #[test]
+    fn test_extend_error_handling() {
+        let mut rb = RollingCharBuffer::<3>::new();
+
+        // Trying to extend with more items than capacity
+        assert_eq!(rb.extend(&['a', 'b', 'c', 'd']), Err(RollingCharBufferError::BufferFullError));
+
+        // Fill the buffer
+        assert_eq!(rb.extend(&['a', 'b', 'c']), Ok(0));
+
+        // Trying to extend a full buffer
+        assert_eq!(rb.extend(&['e']), Err(RollingCharBufferError::BufferFullError));
+
+        // Clear and try again
+        rb.clear();
+        assert_eq!(rb.extend(&['a', 'b']), Ok(1));
+        assert_eq!(rb.len(), 2);
+    }
+
+    #[test]
+    fn test_prepend_error_handling() {
+        let mut rb = RollingCharBuffer::<3>::new();
+
+        // Trying to prepend with more items than capacity
+        assert_eq!(rb.prepend(&['a', 'b', 'c', 'd']), Err(RollingCharBufferError::BufferFullError));
+
+        // Fill the buffer
+        assert_eq!(rb.extend(&['a', 'b', 'c']), Ok(0));
+
+        // Trying to prepend a full buffer
+        assert_eq!(rb.prepend(&['e']), Err(RollingCharBufferError::BufferFullError));
+
+        // Read one and try again
+        assert_eq!(rb.read(), Ok('a'));
+        assert_eq!(rb.prepend(&['e']), Ok(0));
+        assert_eq!(rb.len(), 3);
+    }
+
+    #[test]
+    fn test_large_buffer_operations() {
+        let mut rb = RollingCharBuffer::<1000>::new();
+
+        // Fill with sequential characters
+        for i in 0..500 {
+            let c = char::from_u32(97 + (i % 26) as u32).unwrap(); // a-z
+            assert_eq!(rb.push(c), Ok(()));
+        }
+
+        assert_eq!(rb.len(), 500);
+
+        // Read half
+        for _ in 0..250 {
+            assert!(rb.read().is_ok());
+        }
+
+        assert_eq!(rb.len(), 250);
+
+        // Fill again
+        for i in 0..750 {
+            let c = char::from_u32(65 + (i % 26) as u32).unwrap(); // A-Z
+            assert_eq!(rb.push(c), Ok(()));
+        }
+
+        // Should be full now
+        assert_eq!(rb.len(), 1000);
+        assert!(rb.is_full());
+    }
 }
