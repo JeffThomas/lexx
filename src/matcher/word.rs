@@ -4,7 +4,7 @@
 ///
 /// This module is useful for lexers that need to identify and extract words or identifiers from text.
 use crate::matcher::{Matcher, MatcherResult};
-use crate::token::{Token, TOKEN_TYPE_WORD};
+use crate::token::{TOKEN_TYPE_WORD, Token};
 use std::collections::HashMap;
 
 /// The `WordMatcher` is a matcher that matches word tokens in the input stream.
@@ -106,11 +106,11 @@ impl WordMatcher {
 #[cfg(test)]
 mod tests {
     use crate::input::InputString;
+    use crate::matcher::Matcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::matcher::word::WordMatcher;
     use crate::token::TOKEN_TYPE_WORD;
     use crate::{Lexx, LexxError, Lexxer};
-    use crate::matcher::Matcher;
 
     #[test]
     fn matcher_word_matches_word() {
@@ -411,20 +411,26 @@ mod tests {
         );
 
         // Should match "résumé" (French word with accents)
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "résumé" && t.token_type == TOKEN_TYPE_WORD));
-        
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "résumé" && t.token_type == TOKEN_TYPE_WORD)
+        );
+
         // Should match whitespace
         assert!(matches!(lexx.next_token(), Ok(Some(_))));
-        
+
         // Should match "привет" (Russian word)
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "привет" && t.token_type == TOKEN_TYPE_WORD));
-        
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "привет" && t.token_type == TOKEN_TYPE_WORD)
+        );
+
         // Should match whitespace
         assert!(matches!(lexx.next_token(), Ok(Some(_))));
-        
+
         // Should match "こんにちは" (Japanese word)
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "こんにちは" && t.token_type == TOKEN_TYPE_WORD));
-        
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "こんにちは" && t.token_type == TOKEN_TYPE_WORD)
+        );
+
         // No more tokens
         assert!(matches!(lexx.next_token(), Ok(None)));
     }
@@ -451,21 +457,35 @@ mod tests {
         );
 
         // Should match "don" but not the apostrophe
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "don" && t.token_type == TOKEN_TYPE_WORD));
-        
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "don" && t.token_type == TOKEN_TYPE_WORD)
+        );
+
         // Should fail on apostrophe
-        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
-        
+        assert!(matches!(
+            lexx.next_token(),
+            Err(LexxError::TokenNotFound(_))
+        ));
+
         // Should match "t"
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "t" && t.token_type == TOKEN_TYPE_WORD));
-        
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "t" && t.token_type == TOKEN_TYPE_WORD)
+        );
+
         // Should match whitespace
         assert!(matches!(lexx.next_token(), Ok(Some(_))));
-        
+
         // Similar pattern for "can't"
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "can" && t.token_type == TOKEN_TYPE_WORD));
-        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "t" && t.token_type == TOKEN_TYPE_WORD));
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "can" && t.token_type == TOKEN_TYPE_WORD)
+        );
+        assert!(matches!(
+            lexx.next_token(),
+            Err(LexxError::TokenNotFound(_))
+        ));
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "t" && t.token_type == TOKEN_TYPE_WORD)
+        );
     }
 
     #[test]
@@ -490,24 +510,42 @@ mod tests {
         );
 
         // Should match "abc" but not the numbers
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "abc" && t.token_type == TOKEN_TYPE_WORD));
-        
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "abc" && t.token_type == TOKEN_TYPE_WORD)
+        );
+
         // Should fail on numbers
-        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
-        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
-        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
-        
+        assert!(matches!(
+            lexx.next_token(),
+            Err(LexxError::TokenNotFound(_))
+        ));
+        assert!(matches!(
+            lexx.next_token(),
+            Err(LexxError::TokenNotFound(_))
+        ));
+        assert!(matches!(
+            lexx.next_token(),
+            Err(LexxError::TokenNotFound(_))
+        ));
+
         // Should match whitespace
         assert!(matches!(lexx.next_token(), Ok(Some(_))));
-        
+
         // Should match "def" but not the exclamation mark
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "def" && t.token_type == TOKEN_TYPE_WORD));
-        
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "def" && t.token_type == TOKEN_TYPE_WORD)
+        );
+
         // Should fail on exclamation mark
-        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
-        
+        assert!(matches!(
+            lexx.next_token(),
+            Err(LexxError::TokenNotFound(_))
+        ));
+
         // Should match "ghi"
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "ghi" && t.token_type == TOKEN_TYPE_WORD));
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "ghi" && t.token_type == TOKEN_TYPE_WORD)
+        );
     }
 
     #[test]
@@ -532,7 +570,9 @@ mod tests {
         );
 
         // The exact matcher should win due to higher precedence
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "keyword" && t.token_type == crate::token::TOKEN_TYPE_EXACT));
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "keyword" && t.token_type == crate::token::TOKEN_TYPE_EXACT)
+        );
     }
 
     #[test]
@@ -548,8 +588,10 @@ mod tests {
         );
 
         // Should match "end"
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "end" && t.token_type == TOKEN_TYPE_WORD));
-        
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "end" && t.token_type == TOKEN_TYPE_WORD)
+        );
+
         // No more tokens
         assert!(matches!(lexx.next_token(), Ok(None)));
     }
@@ -557,18 +599,18 @@ mod tests {
     #[test]
     fn test_reset_functionality() {
         use std::collections::HashMap;
-        
+
         // Test that the reset function properly resets the matcher state
         let mut matcher = WordMatcher {
             index: 10, // Simulate some previous matching
             precedence: 0,
             running: false,
         };
-        
+
         // Reset the matcher
         let mut ctx = Box::new(HashMap::new());
         matcher.reset(&mut ctx);
-         
+
         // Verify that the matcher state has been reset
         assert_eq!(matcher.index, 0);
         assert!(matcher.running);

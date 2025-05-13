@@ -1,10 +1,10 @@
+use lexx::Lexx;
 use lexx::input::InputString;
 use lexx::matcher::float::FloatMatcher;
 use lexx::matcher::integer::IntegerMatcher;
 use lexx::matcher::symbol::SymbolMatcher;
 use lexx::matcher::whitespace::WhitespaceMatcher;
 use lexx::matcher::word::WordMatcher;
-use lexx::Lexx;
 
 fn main() {
     // Create a simple input string

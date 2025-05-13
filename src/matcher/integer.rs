@@ -1,7 +1,7 @@
 /// The integer matcher matches integer numbers. To qualify as integer the numbers must
 /// start and end with a numeric digit.
 use crate::matcher::{Matcher, MatcherResult};
-use crate::token::{Token, TOKEN_TYPE_INTEGER};
+use crate::token::{TOKEN_TYPE_INTEGER, Token};
 use std::collections::HashMap;
 
 ///
@@ -107,10 +107,10 @@ impl IntegerMatcher {
 #[cfg(test)]
 mod tests {
     use crate::input::InputString;
+    use crate::matcher::Matcher;
     use crate::matcher::integer::IntegerMatcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::{Lexx, LexxError, Lexxer};
-    use crate::matcher::Matcher;
 
     #[test]
     fn matcher_integer_matches_integer() {

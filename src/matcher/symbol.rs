@@ -4,7 +4,7 @@
 ///
 /// This module is useful for lexers that need to identify and extract symbols (e.g., operators, punctuation) from text.
 use crate::matcher::{Matcher, MatcherResult};
-use crate::token::{Token, TOKEN_TYPE_SYMBOL};
+use crate::token::{TOKEN_TYPE_SYMBOL, Token};
 use std::collections::HashMap;
 
 /// The `SymbolMatcher` is a matcher that matches symbol tokens in the input stream.
@@ -104,11 +104,11 @@ impl SymbolMatcher {
 #[cfg(test)]
 mod tests {
     use crate::input::InputString;
+    use crate::matcher::Matcher;
     use crate::matcher::symbol::SymbolMatcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
-    use crate::matcher::Matcher;
-    use crate::{Lexx, LexxError, Lexxer};
     use crate::token::TOKEN_TYPE_SYMBOL;
+    use crate::{Lexx, LexxError, Lexxer};
 
     #[test]
     fn matcher_symbol_matches_single_symbol() {
@@ -284,10 +284,10 @@ mod tests {
             precedence: 0,
             running: false,
         };
-        
+
         let mut ctx = Box::new(std::collections::HashMap::<String, i32>::new());
         matcher.reset(&mut ctx);
-        
+
         assert_eq!(matcher.index, 0);
         assert!(matcher.running);
     }

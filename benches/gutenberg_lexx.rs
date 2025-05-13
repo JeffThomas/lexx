@@ -1,4 +1,4 @@
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use lexx::input::InputReader;
 use lexx::matcher::exact::ExactMatcher;
 use lexx::matcher::float::FloatMatcher;

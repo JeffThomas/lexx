@@ -2,7 +2,7 @@
 /// start and end with a numeric digit and have a period within them. For example `1.0`. Thus,
 /// `.1` and `1.` do not qualify as floating point numbers.
 use crate::matcher::{Matcher, MatcherResult};
-use crate::token::{Token, TOKEN_TYPE_FLOAT};
+use crate::token::{TOKEN_TYPE_FLOAT, Token};
 use std::collections::HashMap;
 
 ///
@@ -122,13 +122,13 @@ impl FloatMatcher {
 #[cfg(test)]
 mod tests {
     use crate::input::InputString;
+    use crate::matcher::Matcher;
     use crate::matcher::float::FloatMatcher;
+    use crate::matcher::integer::IntegerMatcher;
     use crate::matcher::symbol::SymbolMatcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
-    use crate::{Lexx, LexxError, Lexxer};
-    use crate::matcher::integer::IntegerMatcher;
-    use crate::matcher::Matcher;
     use crate::token::TOKEN_TYPE_FLOAT;
+    use crate::{Lexx, LexxError, Lexxer};
 
     #[test]
     fn matcher_float_matches_simple_float() {
@@ -369,10 +369,10 @@ mod tests {
             float: true,
             running: false,
         };
-        
+
         let mut ctx = Box::new(std::collections::HashMap::<String, i32>::new());
         matcher.reset(&mut ctx);
-        
+
         assert_eq!(matcher.index, 0);
         assert!(!matcher.dot);
         assert!(!matcher.float);

@@ -267,8 +267,8 @@ mod tests {
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::matcher::word::WordMatcher;
     use crate::token::{
-        Token, TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE,
-        TOKEN_TYPE_WORD,
+        TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE,
+        TOKEN_TYPE_WORD, Token,
     };
     use crate::{Lexx, LexxError, Lexxer};
 

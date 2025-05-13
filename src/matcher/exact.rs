@@ -195,9 +195,9 @@ mod tests {
     use crate::matcher::exact::ExactMatcher;
     use crate::matcher::symbol::SymbolMatcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
+    use crate::matcher::{Matcher, MatcherResult};
     use crate::token::TOKEN_TYPE_EXACT;
     use crate::{Lexx, LexxError, Lexxer};
-    use crate::matcher::{Matcher, MatcherResult};
 
     #[test]
     fn matcher_exact_matches_word() {
@@ -372,8 +372,8 @@ mod tests {
 
     #[test]
     fn example_test() {
-        use crate::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
         use crate::Lexx;
+        use crate::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
 
         let lexx_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
 
@@ -418,7 +418,7 @@ mod tests {
             matches!(lexx.next_token(), Ok(Some(t)) if t.value == "d$rrr" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 15)
         );
     }
-    
+
     #[test]
     fn test_overlapping_matches_with_precedence() {
         // Test that when multiple matches are possible, the one with higher precedence wins
@@ -433,16 +433,21 @@ mod tests {
                 Box::new(ExactMatcher::build_exact_matcher(
                     vec!["abcdef"],
                     TOKEN_TYPE_EXACT + 1, // Different token type to distinguish
-                    0, // Lower precedence
+                    0,                    // Lower precedence
                 )),
             ],
         );
 
         // The matcher with higher precedence should win, even though the other would match more
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "abc" && t.token_type == TOKEN_TYPE_EXACT));
-        
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "abc" && t.token_type == TOKEN_TYPE_EXACT)
+        );
+
         // The remaining text should not match anything
-        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
+        assert!(matches!(
+            lexx.next_token(),
+            Err(LexxError::TokenNotFound(_))
+        ));
     }
 
     #[test]
@@ -458,10 +463,15 @@ mod tests {
         );
 
         // Should match "The" exactly
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "The" && t.token_type == TOKEN_TYPE_EXACT));
-        
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "The" && t.token_type == TOKEN_TYPE_EXACT)
+        );
+
         // "THE" is not in the target list, so it should not be matched
-        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
+        assert!(matches!(
+            lexx.next_token(),
+            Err(LexxError::TokenNotFound(_))
+        ));
     }
 
     #[test]
@@ -477,11 +487,15 @@ mod tests {
         );
 
         // Should match "こんにちは" exactly
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "こんにちは" && t.token_type == TOKEN_TYPE_EXACT));
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "こんにちは" && t.token_type == TOKEN_TYPE_EXACT)
+        );
 
         // Should match "世界" exactly
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "世界" && t.token_type == TOKEN_TYPE_EXACT));
-        
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "世界" && t.token_type == TOKEN_TYPE_EXACT)
+        );
+
         // No more tokens
         assert!(matches!(lexx.next_token(), Ok(None)));
     }
@@ -489,27 +503,30 @@ mod tests {
     #[test]
     fn test_reset_functionality() {
         use std::collections::HashMap;
-        
+
         // Test that the reset function properly resets the matcher state
-        let mut matcher = ExactMatcher::build_exact_matcher(
-            vec!["abc", "def"],
-            TOKEN_TYPE_EXACT,
-            0,
-        );
-        
+        let mut matcher =
+            ExactMatcher::build_exact_matcher(vec!["abc", "def"], TOKEN_TYPE_EXACT, 0);
+
         // Simulate partial matching
         let mut ctx = Box::new(HashMap::new());
-        assert!(matches!(matcher.find_match(Some('a'), &[], &mut ctx), MatcherResult::Running()));
-        assert!(matches!(matcher.find_match(Some('b'), &[], &mut ctx), MatcherResult::Running()));
-        
+        assert!(matches!(
+            matcher.find_match(Some('a'), &[], &mut ctx),
+            MatcherResult::Running()
+        ));
+        assert!(matches!(
+            matcher.find_match(Some('b'), &[], &mut ctx),
+            MatcherResult::Running()
+        ));
+
         // Now reset
         matcher.reset(&mut ctx);
-        
+
         // Verify that the matcher state has been reset
         assert_eq!(matcher.index, 0);
         assert_eq!(matcher.found, None);
         assert!(matcher.running);
-        
+
         // All targets should be matching again
         for target in matcher.targets.iter() {
             assert!(target.matching);
@@ -529,6 +546,9 @@ mod tests {
         );
 
         // Should fail to match anything with an empty targets list
-        assert!(matches!(lexx.next_token(), Err(LexxError::TokenNotFound(_))));
+        assert!(matches!(
+            lexx.next_token(),
+            Err(LexxError::TokenNotFound(_))
+        ));
     }
 }

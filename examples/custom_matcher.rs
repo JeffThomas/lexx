@@ -1,6 +1,6 @@
 use lexx::input::InputString;
 use lexx::matcher::{Matcher, MatcherResult};
-use lexx::token::{Token, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD};
+use lexx::token::{TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD, Token};
 use lexx::{Lexx, Lexxer};
 use std::collections::HashMap;
 use std::fmt::Debug;

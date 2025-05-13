@@ -4,7 +4,7 @@
 ///
 /// This module is useful for lexers that need to identify and handle whitespace regions, which are often ignored or treated specially in tokenization.
 use crate::matcher::{Matcher, MatcherResult};
-pub use crate::token::{Token, TOKEN_TYPE_WHITESPACE};
+pub use crate::token::{TOKEN_TYPE_WHITESPACE, Token};
 use std::collections::HashMap;
 
 /// The WhitespaceMatcher matches any series of characters that are `is_whitespace()`.
@@ -112,12 +112,12 @@ impl WhitespaceMatcher {
 mod tests {
     use crate::input::InputString;
     use crate::matcher::Matcher;
+    use crate::matcher::MatcherResult;
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::matcher::word::WordMatcher;
     use crate::token::TOKEN_TYPE_WHITESPACE;
     use crate::{Lexx, Lexxer};
     use std::collections::HashMap;
-    use crate::matcher::MatcherResult;
 
     #[test]
     fn test_basic_whitespace_matching() {
@@ -137,7 +137,7 @@ mod tests {
         let token = lexx.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, "   ");
-        
+
         // No more tokens
         assert!(matches!(lexx.next_token(), Ok(None)));
     }
@@ -160,7 +160,7 @@ mod tests {
         let token = lexx.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, " \t\r\n ");
-        
+
         // No more tokens
         assert!(matches!(lexx.next_token(), Ok(None)));
     }
@@ -191,34 +191,34 @@ mod tests {
         assert_eq!(token.value, "a");
         assert_eq!(token.line, 1);
         assert_eq!(token.column, 1);
-        
+
         // Newline (\n)
         let token = lexx.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, "\n");
-        
+
         // Second word - 'b'
         let token = lexx.next_token().unwrap().unwrap();
         assert_eq!(token.value, "b");
         assert_eq!(token.line, 2);
         assert_eq!(token.column, 1);
-        
+
         // Carriage return + newline (\r\n)
         let token = lexx.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, "\r\n");
-        
+
         // Third word - 'c'
         let token = lexx.next_token().unwrap().unwrap();
         assert_eq!(token.value, "c");
         assert_eq!(token.line, 3);
         assert_eq!(token.column, 1);
-        
+
         // Carriage return only (\r)
         let token = lexx.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, "\r");
-        
+
         // Fourth word - 'd'
         // let token = lexx.next_token().unwrap().unwrap();
         // assert_eq!(token.value, "d");
@@ -251,11 +251,11 @@ mod tests {
         let token = lexx.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, "  ");
-        
+
         // Word token
         let token = lexx.next_token().unwrap().unwrap();
         assert_eq!(token.value, "abc");
-        
+
         // Second whitespace token
         let token = lexx.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
@@ -314,11 +314,11 @@ mod tests {
             precedence: 0,
             running: false,
         };
-        
+
         // Reset the matcher
         let mut ctx = Box::new(HashMap::new());
         matcher.reset(&mut ctx);
-        
+
         // Verify that the matcher state has been reset
         assert_eq!(matcher.index, 0);
         assert_eq!(matcher.column, 0);
@@ -350,12 +350,12 @@ mod tests {
         // Word token
         let token = lexx.next_token().unwrap().unwrap();
         assert_eq!(token.value, "abc");
-        
+
         // Whitespace token at end of input
         let token = lexx.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, "   ");
-        
+
         // No more tokens
         assert!(matches!(lexx.next_token(), Ok(None)));
     }
@@ -370,29 +370,38 @@ mod tests {
             precedence: 2, // Set a non-zero precedence to test precedence method
             running: true,
         };
-        
+
         let mut ctx = Box::new(HashMap::new());
         let value: Vec<char> = vec![' ', ' ', '\n'];
-        
+
         // Test is_running
         assert!(matcher.is_running());
-        
+
         // Test precedence
         assert_eq!(matcher.precedence(), 2);
-        
+
         // Test find_match with whitespace
-        assert!(matches!(matcher.find_match(Some(' '), &value, &mut ctx), MatcherResult::Running()));
+        assert!(matches!(
+            matcher.find_match(Some(' '), &value, &mut ctx),
+            MatcherResult::Running()
+        ));
         assert_eq!(matcher.index, 1);
         assert_eq!(matcher.column, 1);
-        
+
         // Test find_match with newline
-        assert!(matches!(matcher.find_match(Some('\n'), &value, &mut ctx), MatcherResult::Running()));
+        assert!(matches!(
+            matcher.find_match(Some('\n'), &value, &mut ctx),
+            MatcherResult::Running()
+        ));
         assert_eq!(matcher.index, 2);
         assert_eq!(matcher.column, 1); // Column reset to 1 after newline
         assert_eq!(matcher.line, 1); // Line incremented
-        
+
         // Test find_match with non-whitespace
-        assert!(matches!(matcher.find_match(Some('a'), &value, &mut ctx), MatcherResult::Matched(_)));
+        assert!(matches!(
+            matcher.find_match(Some('a'), &value, &mut ctx),
+            MatcherResult::Matched(_)
+        ));
         assert!(!matcher.is_running()); // Should no longer be running
     }
 }

@@ -387,8 +387,8 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
 
 #[cfg(test)]
 mod tests {
-    use crate::rolling_char_buffer::RollingCharBufferError;
     use crate::RollingCharBuffer;
+    use crate::rolling_char_buffer::RollingCharBufferError;
 
     #[test]
     fn test_buffer_is_empty() {
@@ -615,7 +615,7 @@ mod tests {
         assert_eq!(rb.len(), 0);
         assert!(rb.is_empty());
     }
-    
+
     #[test]
     fn test_single_capacity_buffer() {
         let mut rb = RollingCharBuffer::<1>::new();
@@ -626,7 +626,7 @@ mod tests {
         assert_eq!(rb.read(), Ok('a'));
         assert!(rb.is_empty());
     }
-    
+
     #[test]
     fn test_buffer_pop_operations() {
         let mut rb = RollingCharBuffer::<5>::new();
@@ -646,10 +646,10 @@ mod tests {
         assert_eq!(rb.push('d'), Ok(()));
         assert_eq!(rb.push('e'), Ok(()));
         assert_eq!(rb.read(), Ok('d')); // Read from front
-        assert_eq!(rb.pop(), Ok('e'));  // Pop from end
+        assert_eq!(rb.pop(), Ok('e')); // Pop from end
         assert!(rb.is_empty());
     }
-    
+
     #[test]
     fn test_buffer_wrap_around() {
         let mut rb = RollingCharBuffer::<3>::new();
@@ -671,7 +671,7 @@ mod tests {
         assert_eq!(rb.read(), Ok('d'));
         assert!(rb.is_empty());
     }
-    
+
     #[test]
     fn test_alternating_push_pop() {
         let mut rb = RollingCharBuffer::<3>::new();
@@ -705,13 +705,19 @@ mod tests {
         let mut rb = RollingCharBuffer::<3>::new();
 
         // Trying to extend with more items than capacity
-        assert_eq!(rb.extend(&['a', 'b', 'c', 'd']), Err(RollingCharBufferError::BufferFullError));
+        assert_eq!(
+            rb.extend(&['a', 'b', 'c', 'd']),
+            Err(RollingCharBufferError::BufferFullError)
+        );
 
         // Fill the buffer
         assert_eq!(rb.extend(&['a', 'b', 'c']), Ok(0));
 
         // Trying to extend a full buffer
-        assert_eq!(rb.extend(&['e']), Err(RollingCharBufferError::BufferFullError));
+        assert_eq!(
+            rb.extend(&['e']),
+            Err(RollingCharBufferError::BufferFullError)
+        );
 
         // Clear and try again
         rb.clear();
@@ -724,13 +730,19 @@ mod tests {
         let mut rb = RollingCharBuffer::<3>::new();
 
         // Trying to prepend with more items than capacity
-        assert_eq!(rb.prepend(&['a', 'b', 'c', 'd']), Err(RollingCharBufferError::BufferFullError));
+        assert_eq!(
+            rb.prepend(&['a', 'b', 'c', 'd']),
+            Err(RollingCharBufferError::BufferFullError)
+        );
 
         // Fill the buffer
         assert_eq!(rb.extend(&['a', 'b', 'c']), Ok(0));
 
         // Trying to prepend a full buffer
-        assert_eq!(rb.prepend(&['e']), Err(RollingCharBufferError::BufferFullError));
+        assert_eq!(
+            rb.prepend(&['e']),
+            Err(RollingCharBufferError::BufferFullError)
+        );
 
         // Read one and try again
         assert_eq!(rb.read(), Ok('a'));
