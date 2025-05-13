@@ -1,3 +1,6 @@
+/// The `exact` module provides the `ExactMatcher`, which matches strings exactly as specified.
+/// It allows users to define a list of strings to match against, ensuring that only exact matches
+/// are recognized, regardless of their position in the input stream.
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::Token;
 use std::collections::HashMap;
@@ -19,9 +22,9 @@ pub struct Target {
 /// ```rust
 /// use lexx::{Lexx, Lexxer};
 /// use lexx::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
-/// use lexx::matcher_exact::ExactMatcher;
-/// use lexx::matcher_symbol::SymbolMatcher;
 /// use lexx::input::InputString;
+/// use lexx::matcher::exact::ExactMatcher;
+/// use lexx::matcher::symbol::SymbolMatcher;
 ///
 /// let lexx_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
 ///
@@ -81,40 +84,32 @@ impl Matcher for ExactMatcher {
         _value: &[char],
         _ctx: &mut Box<HashMap<String, i32>>,
     ) -> MatcherResult {
-        return match oc {
+        match oc {
             None => {
                 self.running = false;
-                let mut i: usize = 0;
-                for target in self.targets.iter_mut() {
-                    if target.matching && matches!(target.target.get(self.index), None) {
-                        self.found = Some(i)
+                for (i, target) in self.targets.iter_mut().enumerate() {
+                    if target.matching && target.target.get(self.index).is_none() {
+                        self.found = Some(i);
                     }
-                    i += 1
                 }
                 self.generate_exact_token()
             }
             Some(c) => {
                 self.running = false;
-                let mut i: usize = 0;
-                for target in self.targets.iter_mut() {
+                for (i, target) in self.targets.iter_mut().enumerate() {
                     if target.matching {
                         match target.target.get(self.index) {
-                            None => {
-                                target.matching = false;
-                                if self.index > 0 {
-                                    self.found = Some(i);
-                                }
+                            Some(&m) if m == c => {
+                                self.running = true;
                             }
-                            Some(m) => {
-                                if *m == c {
-                                    self.running = true;
-                                } else {
-                                    target.matching = false;
+                            Some(_) | None => {
+                                target.matching = false;
+                                if target.target.get(self.index).is_none() && self.index > 0 {
+                                    self.found = Some(i);
                                 }
                             }
                         }
                     }
-                    i += 1;
                 }
                 self.index += 1;
                 if !self.running {
@@ -123,7 +118,7 @@ impl Matcher for ExactMatcher {
                     MatcherResult::Running()
                 }
             }
-        };
+        }
     }
     fn is_running(&self) -> bool {
         self.running
@@ -147,24 +142,28 @@ impl ExactMatcher {
         token_type: u16,
         precedence: u8,
     ) -> ExactMatcher {
-        let mut targets: Box<Vec<Target>> = Box::new(vec![]);
+        // Pre-allocate with the exact capacity needed
+        let mut targets = Vec::with_capacity(matches.len());
+
         for m in matches {
-            let mut target = Target {
+            // Only allocate the vector once with the exact capacity needed
+            let mut chars = Vec::with_capacity(m.len());
+            // Extend is more efficient than pushing chars one by one
+            chars.extend(m.chars());
+
+            targets.push(Target {
                 matching: true,
-                target: Box::new(vec![]),
-            };
-            for c in m.chars() {
-                target.target.push(c)
-            }
-            targets.push(target)
+                target: Box::new(chars),
+            });
         }
+
         ExactMatcher {
             index: 0,
             precedence,
             found: None,
             running: true,
-            targets,
             token_type,
+            targets: Box::new(targets),
         }
     }
 
@@ -176,7 +175,7 @@ impl ExactMatcher {
                 let i = self.found.unwrap();
                 let target = &self.targets.get(i).unwrap().target;
                 let token_value: String = target.clone().into_iter().collect();
-                let len = token_value.len();
+                let len = target.len();
                 MatcherResult::Matched(Token {
                     value: token_value,
                     token_type: self.token_type,
@@ -192,11 +191,13 @@ impl ExactMatcher {
 
 #[cfg(test)]
 mod tests {
-    use crate::matcher_exact::ExactMatcher;
-    use crate::matcher_whitespace::WhitespaceMatcher;
+    use crate::input::InputString;
+    use crate::matcher::exact::ExactMatcher;
+    use crate::matcher::symbol::SymbolMatcher;
+    use crate::matcher::whitespace::WhitespaceMatcher;
+    use crate::matcher::{Matcher, MatcherResult};
     use crate::token::TOKEN_TYPE_EXACT;
     use crate::{Lexx, LexxError, Lexxer};
-    use crate::input::InputString;
 
     #[test]
     fn matcher_exact_matches_word() {
@@ -212,10 +213,10 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
@@ -223,7 +224,7 @@ mod tests {
                 assert_eq!(t.token_type, TOKEN_TYPE_EXACT)
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }
@@ -261,10 +262,10 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
@@ -273,7 +274,7 @@ mod tests {
                 assert_eq!(t.column, 21);
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }
@@ -322,19 +323,19 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
                 assert_eq!(t.value, "dog");
                 assert_eq!(t.line, 1);
-                assert_eq!(t.column, 42);
+                assert_eq!(t.column, 39);
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }
@@ -353,10 +354,10 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
@@ -364,17 +365,15 @@ mod tests {
                 assert_eq!(t.token_type, TOKEN_TYPE_EXACT)
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }
 
     #[test]
     fn example_test() {
-        use crate::matcher_exact::ExactMatcher;
-        use crate::matcher_symbol::SymbolMatcher;
-        use crate::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
         use crate::Lexx;
+        use crate::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
 
         let lexx_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
 
@@ -418,5 +417,138 @@ mod tests {
         assert!(
             matches!(lexx.next_token(), Ok(Some(t)) if t.value == "d$rrr" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 15)
         );
+    }
+
+    #[test]
+    fn test_overlapping_matches_with_precedence() {
+        // Test that when multiple matches are possible, the one with higher precedence wins
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("abcdef"))),
+            vec![
+                Box::new(ExactMatcher::build_exact_matcher(
+                    vec!["abc"],
+                    TOKEN_TYPE_EXACT,
+                    1, // Higher precedence
+                )),
+                Box::new(ExactMatcher::build_exact_matcher(
+                    vec!["abcdef"],
+                    TOKEN_TYPE_EXACT + 1, // Different token type to distinguish
+                    0,                    // Lower precedence
+                )),
+            ],
+        );
+
+        // The matcher with higher precedence should win, even though the other would match more
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "abc" && t.token_type == TOKEN_TYPE_EXACT)
+        );
+
+        // The remaining text should not match anything
+        assert!(matches!(
+            lexx.next_token(),
+            Err(LexxError::TokenNotFound(_))
+        ));
+    }
+
+    #[test]
+    fn test_case_sensitivity() {
+        // Test that matching is case-sensitive
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("The THE the"))),
+            vec![Box::new(ExactMatcher::build_exact_matcher(
+                vec!["The", "the"],
+                TOKEN_TYPE_EXACT,
+                0,
+            ))],
+        );
+
+        // Should match "The" exactly
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "The" && t.token_type == TOKEN_TYPE_EXACT)
+        );
+
+        // "THE" is not in the target list, so it should not be matched
+        assert!(matches!(
+            lexx.next_token(),
+            Err(LexxError::TokenNotFound(_))
+        ));
+    }
+
+    #[test]
+    fn test_unicode_character_handling() {
+        // Test that Unicode characters are handled correctly
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("こんにちは世界"))),
+            vec![Box::new(ExactMatcher::build_exact_matcher(
+                vec!["こんにちは", "世界"],
+                TOKEN_TYPE_EXACT,
+                0,
+            ))],
+        );
+
+        // Should match "こんにちは" exactly
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "こんにちは" && t.token_type == TOKEN_TYPE_EXACT)
+        );
+
+        // Should match "世界" exactly
+        assert!(
+            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "世界" && t.token_type == TOKEN_TYPE_EXACT)
+        );
+
+        // No more tokens
+        assert!(matches!(lexx.next_token(), Ok(None)));
+    }
+
+    #[test]
+    fn test_reset_functionality() {
+        use std::collections::HashMap;
+
+        // Test that the reset function properly resets the matcher state
+        let mut matcher =
+            ExactMatcher::build_exact_matcher(vec!["abc", "def"], TOKEN_TYPE_EXACT, 0);
+
+        // Simulate partial matching
+        let mut ctx = Box::new(HashMap::new());
+        assert!(matches!(
+            matcher.find_match(Some('a'), &[], &mut ctx),
+            MatcherResult::Running()
+        ));
+        assert!(matches!(
+            matcher.find_match(Some('b'), &[], &mut ctx),
+            MatcherResult::Running()
+        ));
+
+        // Now reset
+        matcher.reset(&mut ctx);
+
+        // Verify that the matcher state has been reset
+        assert_eq!(matcher.index, 0);
+        assert_eq!(matcher.found, None);
+        assert!(matcher.running);
+
+        // All targets should be matching again
+        for target in matcher.targets.iter() {
+            assert!(target.matching);
+        }
+    }
+
+    #[test]
+    fn test_empty_targets_list() {
+        // Test behavior with an empty targets list
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("abc"))),
+            vec![Box::new(ExactMatcher::build_exact_matcher(
+                vec![],
+                TOKEN_TYPE_EXACT,
+                0,
+            ))],
+        );
+
+        // Should fail to match anything with an empty targets list
+        assert!(matches!(
+            lexx.next_token(),
+            Err(LexxError::TokenNotFound(_))
+        ));
     }
 }

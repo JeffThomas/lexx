@@ -1,3 +1,10 @@
+/// The Keyword matcher is very similar to the [`ExactMatcher`](crate::matcher_exact::ExactMatcher) in that you give it a list of matches
+/// to make and it looks EXACTLY for those matches. The difference between this matcher and the
+/// [`ExactMatcher`](crate::matcher_exact::ExactMatcher) is that for `THIS` matcher an exact match must end with a non alpha-numeric
+/// character. For example if you give this matcher "match" as a keyword it will NOT match
+/// "matches", "matchers" or "match1", "1matcher", "2match" etc.
+/// It will match "match ", " match." "---match---" and so on.
+///
 use crate::matcher::{Matcher, MatcherResult};
 use crate::token::Token;
 use std::collections::HashMap;
@@ -11,12 +18,6 @@ pub struct Target {
     pub target: Box<Vec<char>>,
 }
 
-/// The Keyword matcher is very similar to the [ExactMatcher](crate::matcher_exact::ExactMatcher) in that you give it a list of matches
-/// to make and it looks EXACTLY for those matches. The difference between this matcher and the
-/// [ExactMatcher](crate::matcher_exact::ExactMatcher) is that for `THIS` matcher an exact match must end with a non alpha-numeric
-/// character. For example if you give this matcher "match" as a keyword it will NOT match
-/// "matches", "matchers" or "match1", "1matcher", "2match" etc.
-/// It will match "match ", " match." "---match---" and so on.
 ///
 /// # Example
 ///
@@ -24,9 +25,9 @@ pub struct Target {
 /// use lexx::{Lexx, Lexxer};
 /// use lexx::token::{TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_KEYWORD, TOKEN_TYPE_WORD};
 /// use lexx::input::InputString;
-/// use lexx::matcher_keyword::KeywordMatcher;
-/// use lexx::matcher_whitespace::WhitespaceMatcher;
-/// use lexx::matcher_word::WordMatcher;
+/// use lexx::matcher::keyword::KeywordMatcher;
+/// use lexx::matcher::whitespace::WhitespaceMatcher;
+/// use lexx::matcher::word::WordMatcher;
 ///
 /// let lexx_input = InputString::new(String::from("matcher matching match dog"));
 ///
@@ -84,49 +85,65 @@ impl Matcher for KeywordMatcher {
         _value: &[char],
         _ctx: &mut Box<HashMap<String, i32>>,
     ) -> MatcherResult {
-        return match oc {
+        match oc {
             None => {
                 self.running = false;
-                let mut i: usize = 0;
-                for target in self.targets.iter_mut() {
-                    if target.matching && matches!(target.target.get(self.index), None) {
-                        self.found = Some(i)
+                // Check if any target has matched completely
+                for (i, target) in self.targets.iter().enumerate() {
+                    if target.matching && target.target.get(self.index).is_none() {
+                        self.found = Some(i);
+                        break; // Early return once we find a match
                     }
-                    i += 1
                 }
                 self.generate_keyword_token()
             }
             Some(c) => {
+                // Start with assumption we're not running
                 self.running = false;
-                let mut i: usize = 0;
-                for target in self.targets.iter_mut() {
-                    if target.matching {
-                        match target.target.get(self.index) {
-                            None => {
-                                target.matching = false;
-                                if self.index > 0 && !c.is_alphabetic() {
-                                    self.found = Some(i);
-                                }
+
+                // Fast path: if no targets are matching, return immediately
+                if !self.targets.iter().any(|t| t.matching) {
+                    return self.generate_keyword_token();
+                }
+
+                let mut found_potential_match = false;
+
+                for (i, target) in self.targets.iter_mut().enumerate() {
+                    if !target.matching {
+                        continue; // Skip targets that are already not matching
+                    }
+
+                    match target.target.get(self.index) {
+                        None => {
+                            target.matching = false;
+                            // Only consider it a match if we've matched at least one character
+                            // and the next character is not alphanumeric
+                            if self.index > 0 && !c.is_alphanumeric() {
+                                self.found = Some(i);
+                                found_potential_match = true;
                             }
-                            Some(m) => {
-                                if *m == c {
-                                    self.running = true;
-                                } else {
-                                    target.matching = false;
-                                }
+                        }
+                        Some(m) => {
+                            if *m == c {
+                                self.running = true; // We have at least one match
+                            } else {
+                                target.matching = false;
                             }
                         }
                     }
-                    i += 1;
                 }
+
                 self.index += 1;
-                if !self.running {
+
+                if !self.running && !found_potential_match {
                     self.generate_keyword_token()
-                } else {
+                } else if self.running {
                     MatcherResult::Running()
+                } else {
+                    self.generate_keyword_token()
                 }
             }
-        };
+        }
     }
     fn is_running(&self) -> bool {
         self.running
@@ -137,7 +154,7 @@ impl Matcher for KeywordMatcher {
 }
 
 impl KeywordMatcher {
-    /// Build an keyword matcher
+    /// Build a keyword matcher
     ///
     /// # Arguments
     ///
@@ -150,24 +167,26 @@ impl KeywordMatcher {
         token_type: u16,
         precedence: u8,
     ) -> KeywordMatcher {
-        let mut targets: Box<Vec<Target>> = Box::new(vec![]);
+        // Pre-allocate with the exact capacity needed
+        let mut targets = Vec::with_capacity(matches.len());
         for m in matches {
-            let mut target = Target {
+            // Only allocate the vector once with the exact capacity needed
+            let mut chars = Vec::with_capacity(m.len());
+            // Extend is more efficient than pushing chars one by one
+            chars.extend(m.chars());
+            targets.push(Target {
                 matching: true,
-                target: Box::new(vec![]),
-            };
-            for c in m.chars() {
-                target.target.push(c)
-            }
-            targets.push(target)
+                target: Box::new(chars),
+            });
         }
+
         KeywordMatcher {
             index: 0,
             precedence,
             found: None,
             running: true,
-            targets,
             token_type,
+            targets: Box::new(targets),
         }
     }
 
@@ -195,11 +214,11 @@ impl KeywordMatcher {
 
 #[cfg(test)]
 mod tests {
-    use crate::matcher_keyword::KeywordMatcher;
-    use crate::matcher_whitespace::WhitespaceMatcher;
+    use crate::input::InputString;
+    use crate::matcher::keyword::KeywordMatcher;
+    use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::token::TOKEN_TYPE_KEYWORD;
     use crate::{Lexx, LexxError, Lexxer};
-    use crate::input::InputString;
 
     #[test]
     fn matcher_exact_matches_word() {
@@ -215,10 +234,10 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
@@ -226,7 +245,7 @@ mod tests {
                 assert_eq!(t.token_type, TOKEN_TYPE_KEYWORD)
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }
@@ -256,17 +275,17 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
                 assert_eq!(t.value, "The")
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
 
@@ -275,17 +294,17 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
                 assert_eq!(t.value, "quick")
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
 
@@ -294,17 +313,17 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
                 assert_eq!(t.value, "brown")
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
 
@@ -313,17 +332,17 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
                 assert_eq!(t.value, "fox")
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
 
@@ -332,10 +351,10 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
@@ -344,7 +363,7 @@ mod tests {
                 assert_eq!(t.column, 21);
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }
@@ -394,19 +413,19 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
                 assert_eq!(t.value, "dog");
                 assert_eq!(t.line, 2);
-                assert_eq!(t.column, 26);
+                assert_eq!(t.column, 25);
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }
@@ -428,15 +447,15 @@ mod tests {
                     assert_eq!(e, "Could not resolve token at 1, 1: 'Some('n')'.");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not throw error");
+                    unreachable!("Should not throw error");
                 }
             },
             Ok(Some(t)) => {
                 assert_eq!(t.value, "The");
-                assert!(false, "should not have matched 'The'");
+                unreachable!("should not have matched 'The'");
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }

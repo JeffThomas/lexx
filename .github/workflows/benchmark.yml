@@ -1,0 +1,55 @@
+name: Benchmark
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual triggering
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-C target-cpu=native"
+
+jobs:
+  benchmark:
+    name: Run benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      
+      - name: Install criterion dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnuplot
+      
+      - name: Run benchmarks
+        run: cargo bench | tee benchmark-results.txt
+      
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: target/criterion/
+          
+      - name: Create benchmark summary
+        run: |
+          echo "# Benchmark Results" > benchmark-summary.md
+          echo "## Latest Run" >> benchmark-summary.md
+          echo "Run on $(date)" >> benchmark-summary.md
+          echo "" >> benchmark-summary.md
+          echo "| Benchmark | Time |" >> benchmark-summary.md
+          echo "|-----------|------|" >> benchmark-summary.md
+          grep "time:" benchmark-results.txt | while read -r line; do
+            benchmark=$(echo "$line" | sed -r 's/^([^:]+):.*/\1/')
+            time=$(echo "$line" | sed -r 's/.*time:.*\[([^]]+)\].*/\1/')
+            echo "| $benchmark | $time |" >> benchmark-summary.md
+          done
+      
+      - name: Upload benchmark summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-summary
+          path: benchmark-summary.md

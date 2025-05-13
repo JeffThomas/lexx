@@ -1,20 +1,20 @@
-use crate::matcher::{Matcher, MatcherResult};
-use crate::token::{Token, TOKEN_TYPE_INTEGER};
-use std::collections::HashMap;
-
 /// The integer matcher matches integer numbers. To qualify as integer the numbers must
 /// start and end with a numeric digit.
+use crate::matcher::{Matcher, MatcherResult};
+use crate::token::{TOKEN_TYPE_INTEGER, Token};
+use std::collections::HashMap;
+
 ///
 /// # Example
 ///
 /// ```rust
 /// use lexx::{Lexx, Lexxer};
 /// use lexx::token::{TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL};
-/// use lexx::matcher_float::FloatMatcher;
-/// use lexx::matcher_symbol::SymbolMatcher;
-/// use lexx::matcher_integer::IntegerMatcher;
-/// use lexx::matcher_whitespace::WhitespaceMatcher;
 /// use lexx::input::InputString;
+/// use lexx::matcher::float::FloatMatcher;
+/// use lexx::matcher::integer::IntegerMatcher;
+/// use lexx::matcher::symbol::SymbolMatcher;
+/// use lexx::matcher::whitespace::WhitespaceMatcher;
 ///
 /// let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
 /// Box::new(InputString::new(String::from("1.0 5 0.012345 .9 00.00 100.0 4."))),
@@ -65,7 +65,7 @@ impl Matcher for IntegerMatcher {
         value: &[char],
         _ctx: &mut Box<HashMap<String, i32>>,
     ) -> MatcherResult {
-        return match oc {
+        match oc {
             None => self.generate_integer_token(value),
             Some(c) => {
                 if c.is_numeric() {
@@ -75,7 +75,7 @@ impl Matcher for IntegerMatcher {
                     self.generate_integer_token(value)
                 }
             }
-        };
+        }
     }
     fn is_running(&self) -> bool {
         self.running
@@ -91,7 +91,7 @@ impl IntegerMatcher {
         self.running = false;
         if self.index > 0 {
             MatcherResult::Matched(Token {
-                value: value[0..self.index].into_iter().collect(),
+                value: value[0..self.index].iter().collect(),
                 token_type: TOKEN_TYPE_INTEGER,
                 len: self.index,
                 line: 0,
@@ -106,10 +106,11 @@ impl IntegerMatcher {
 
 #[cfg(test)]
 mod tests {
-    use crate::matcher_integer::IntegerMatcher;
-    use crate::matcher_whitespace::WhitespaceMatcher;
-    use crate::{Lexx, LexxError, Lexxer};
     use crate::input::InputString;
+    use crate::matcher::Matcher;
+    use crate::matcher::integer::IntegerMatcher;
+    use crate::matcher::whitespace::WhitespaceMatcher;
+    use crate::{Lexx, LexxError, Lexxer};
 
     #[test]
     fn matcher_integer_matches_integer() {
@@ -125,17 +126,17 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
                 assert_eq!(t.value, "4")
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }
@@ -154,17 +155,17 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
                 assert_eq!(t.value, "6346357587454")
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }
@@ -183,17 +184,17 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
                 assert_eq!(t.value, "5")
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
     }
@@ -221,17 +222,17 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
                 assert_eq!(t.value, "2")
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
 
@@ -242,17 +243,17 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
                 assert_eq!(t.value, "3")
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
             }
         }
 
@@ -263,17 +264,114 @@ mod tests {
         match lexx.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
                 LexxError::Error(_) => {
-                    assert!(false, "Should not have failed parsing file");
+                    unreachable!("Should not have failed parsing file");
                 }
             },
             Ok(Some(t)) => {
                 assert_eq!(t.value, "4")
             }
             Ok(None) => {
-                assert!(false, "Should not hit None");
+                unreachable!("Should not hit None");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_integer_resets_properly() {
+        let mut matcher = IntegerMatcher {
+            index: 5,
+            precedence: 0,
+            running: false,
+        };
+
+        let mut ctx = Box::new(std::collections::HashMap::<String, i32>::new());
+        matcher.reset(&mut ctx);
+
+        assert_eq!(matcher.index, 0);
+        assert!(matcher.running);
+    }
+
+    #[test]
+    fn matcher_integer_handles_non_numeric_input() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("abc"))),
+            vec![Box::new(IntegerMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            })],
+        );
+
+        // Should fail to match anything
+        match lexx.next_token() {
+            Err(LexxError::TokenNotFound(_)) => {
+                // This is expected
+            }
+            _ => {
+                unreachable!("Should have failed to match");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_integer_handles_empty_input() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from(""))),
+            vec![Box::new(IntegerMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            })],
+        );
+
+        // Should return None for empty input
+        assert!(matches!(lexx.next_token(), Ok(None)));
+    }
+
+    #[test]
+    fn matcher_integer_returns_correct_token_type() {
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("123"))),
+            vec![Box::new(IntegerMatcher {
+                index: 0,
+                precedence: 0,
+                running: true,
+            })],
+        );
+
+        match lexx.next_token() {
+            Ok(Some(t)) => {
+                assert_eq!(t.value, "123");
+                assert_eq!(t.token_type, crate::token::TOKEN_TYPE_INTEGER);
+                assert_eq!(t.precedence, 0);
+            }
+            _ => {
+                unreachable!("Should have matched an integer");
+            }
+        }
+    }
+
+    #[test]
+    fn matcher_integer_respects_precedence() {
+        let custom_precedence = 5;
+        let mut lexx = Lexx::<512>::new(
+            Box::new(InputString::new(String::from("42"))),
+            vec![Box::new(IntegerMatcher {
+                index: 0,
+                precedence: custom_precedence,
+                running: true,
+            })],
+        );
+
+        match lexx.next_token() {
+            Ok(Some(t)) => {
+                assert_eq!(t.precedence, custom_precedence);
+            }
+            _ => {
+                unreachable!("Should have matched an integer");
             }
         }
     }

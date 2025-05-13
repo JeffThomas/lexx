@@ -12,68 +12,68 @@
 //! Token{ token_type: 4, value: "thing".to_string(), line: 2, column: 5, len: 5, precedence: 0};
 //! Token{ token_type: 5, value: ".".to_string(), line: 2, column: 10, len: 1, precedence: 0};
 //! ```
-//! Lexx uses a [LexxInput](LexxInput) to provide chars that are fed to
-//! [Matcher](Matcher) instances until the longest match is found, if any. The
-//! match will be returned as a [Token](Token) instance. The
-//! [Token](Token) includes a type and the string matched as well as the
-//! line and column where the match was made. A custom [LexxInput](LexxInput)
+//! Lexx uses a [`LexxInput`] to provide chars that are fed to
+//! [`Matcher`] instances until the longest match is found, if any. The
+//! match will be returned as a [`Token`] instance. The
+//! [`Token`] includes a type and the string matched as well as the
+//! line and column where the match was made. A custom [`LexxInput`]
 //! can be passed to Lexx but the library comes with implementations for
-//! [String](input::InputString) and
-//! [Reader](input::InputReader) types.
+//! [`InputString`](input::InputString) and
+//! [`InputReader`](input::InputReader) types.
 //!
-//! Lexx implements [Iterator] so it can be use with `for each`.
+//! Lexx implements [`Iterator`] so it can be used with `for` loops.
 //!
-//! Custom [Matcher](Matcher)s can also be made though Lexx comes with:
-//! - [WordMatcher](matcher_word::WordMatcher) matches alphabetic characters such as `ABCdef` and `word`
-//! - [IntegerMatcher](matcher_integer::IntegerMatcher) matches integers such as `3` or `14537`
-//! - [FloatMatcher](matcher_float::FloatMatcher) matches floats such as `434.312` or `0.001`
-//! - [ExactMatcher](matcher_exact::ExactMatcher) given a vector of strings matches exactly those strings.
-//! You can initialize it with a Type to return so you can use multiple ones for different things. For example one
-//! [ExactMatcher](matcher_exact::ExactMatcher) can
-//! be used to find operators such as `==` and `+` while another could be used to find block identifiers
-//! such as `(` and `)`.
-//! - [SymbolMatcher](matcher_symbol::SymbolMatcher) matches all non alphanumerics `*&)_#@` or `.`.
-//! This is a good catch-all matcher.
-//! - [KeywordMatcher](matcher_keyword::KeywordMatcher) matches specific passed in words such as
-//! `new` or `specific`, it differs from the [ExactMatcher](matcher_exact::ExactMatcher) in that it
-//! will not mach substrings, such as the `new` in `renewable` or `newfangled`.
-//! - [WhitespaceMatcher](matcher_whitespace::WhitespaceMatcher) matches whitespace such as `  ` or `\t\r\n`
+//! Custom [`Matcher`]s can also be made though Lexx comes with:
+//! - [`WordMatcher`](matcher::word::WordMatcher) matches alphabetic characters such as `ABCdef` and `word`
+//! - [`IntegerMatcher`](matcher::integer::IntegerMatcher) matches integers such as `3` or `14537`
+//! - [`FloatMatcher`](matcher::float::FloatMatcher) matches floats such as `434.312` or `0.001`
+//! - [`ExactMatcher`](matcher::exact::ExactMatcher) given a vector of strings matches exactly those strings.
+//!   You can initialize it with a type to return so you can use multiple ones for different things. For example, one
+//!   [`ExactMatcher`](matcher::exact::ExactMatcher) can
+//!   be used to find operators such as `==` and `+` while another could be used to find block identifiers
+//!   such as `(` and `)`.
+//! - [`SymbolMatcher`](matcher::symbol::SymbolMatcher) matches all non-alphanumerics `*&)_#@` or `.`.
+//!   This is a good catch-all matcher.
+//! - [`KeywordMatcher`](matcher::keyword::KeywordMatcher) matches specific passed-in words such as
+//!   `new` or `specific`. It differs from the [`ExactMatcher`](matcher::exact::ExactMatcher) in that it
+//!   will not match substrings, such as the `new` in `renewable` or `newfangled`.
+//! - [`WhitespaceMatcher`](matcher::whitespace::WhitespaceMatcher) matches whitespace such as `  ` or `\t\r\n`
 //!
-//! [Matcher](Matcher)s can be given a precedence that can make a matcher return it's
-//! results even if another matcher has a longer match. For example, both the [WordMatcher](matcher_word::WordMatcher)
-//! and [KeywordMatcher](matcher_keyword::KeywordMatcher) are used at the same time.
+//! [`Matcher`]s can be given a precedence that can make a matcher return its
+//! results even if another matcher has a longer match. For example, both the [`WordMatcher`](matcher::word::WordMatcher)
+//! and [`KeywordMatcher`](matcher::keyword::KeywordMatcher) are used at the same time.
 //!
 //! Note that matchers cannot find matches that start inside the valid matches of other matchers.
-//! For matching `renewable`, the [WordMatcher](matcher_word::WordMatcher)
-//! will make the match even if the [ExactMatcher](matcher_exact::ExactMatcher)
-//! is looking for `new` with a higher precedence because the [WordMatcher](matcher_word::WordMatcher)
+//! For matching `renewable`, the [`WordMatcher`](matcher::word::WordMatcher)
+//! will make the match even if the [`ExactMatcher`](matcher::exact::ExactMatcher)
+//! is looking for `new` with a higher precedence because the [`WordMatcher`](matcher::word::WordMatcher)
 //! will consume all of `renewable` without giving other matchers the chance to look inside of it.
 //!
-//! Also while the [ExactMatcher](matcher_exact::ExactMatcher)
-//! could find the `new` inside `newfangled` the [WordMatcher](matcher_word::WordMatcher)
-//! would match `newfangled` instead since it is longer, unless the [ExactMatcher](matcher_exact::ExactMatcher) is
+//! Also, while the [`ExactMatcher`](matcher::exact::ExactMatcher)
+//! could find the `new` inside `newfangled`, the [`WordMatcher`](matcher::word::WordMatcher)
+//! would match `newfangled` instead since it is longer, unless the [`ExactMatcher`](matcher::exact::ExactMatcher) is
 //! given a higher precedence in which case it would get to return `new` and the next match would
 //! start at `fangled`.
 //!
-//! To successfully parse an entire stream [Lexx] must have a matcher with which to tokenize every
-//! encountered collection of characters. If a match fails [Lexx] will return Err
-//! [TokenNotFound](LexxError::TokenNotFound) with the text that could not be matched.
+//! To successfully parse an entire stream, Lexx must have a matcher with which to tokenize every
+//! encountered collection of characters. If a match fails, Lexx will return `Err(
+//! [TokenNotFound](LexxError::TokenNotFound))` with the text that could not be matched.
 //!
 //! # Panics
 //!
-//! For speed Lexx does not dynamically allocate buffer space, in `Lexx<CAP>` CAP is the maximum
-//! possible token size, if that size is exceeded a panic will be thrown.
+//! For speed, Lexx does not dynamically allocate buffer space. In `Lexx<CAP>`, `CAP` is the maximum
+//! possible token size; if that size is exceeded, a panic will be thrown.
 //!
 //! # Example
 //!
 //! ```rust
-//! use lexx::{Lexx, Lexxer};
+//! use lexx::{matcher, Lexx, Lexxer};
 //! use lexx::input::InputString;
+//! use lexx::matcher::exact::ExactMatcher;
+//! use lexx::matcher::symbol::SymbolMatcher;
+//! use lexx::matcher::whitespace::WhitespaceMatcher;
+//! use lexx::matcher::word::WordMatcher;
 //! use lexx::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_WORD, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_SYMBOL};
-//! use lexx::matcher_whitespace::WhitespaceMatcher;
-//! use lexx::matcher_word::WordMatcher;
-//! use lexx::matcher_exact::ExactMatcher;
-//! use lexx::matcher_symbol::SymbolMatcher;
 //!
 //! let lexx_input = InputString::new(String::from("The quick\n\nbrown fox."));
 //!
@@ -119,29 +119,15 @@
     unused_qualifications
 )]
 
-/// The [Input](LexxInput) for lexx
+/// The [LexxInput] for lexx
 pub mod input;
-/// The [Matcher](Matcher) trait for lexx
+/// The [Matcher] trait for lexx
 pub mod matcher;
-/// The results of a match
-pub mod token;
 /// [RollingCharBuffer](RollingCharBuffer) is a fast, fixed size
 /// [char] buffer that can be used as a LIFO or FIFO stack.
 pub mod rolling_char_buffer;
-/// The [ExactMatcher](matcher_exact::ExactMatcher)
-pub mod matcher_exact;
-/// The [FloatMatcher](matcher_float::FloatMatcher)
-pub mod matcher_float;
-/// The [IntegerMatcher](matcher_integer::IntegerMatcher)
-pub mod matcher_integer;
-/// The [KeywordMatcher](matcher_keyword::KeywordMatcher)
-pub mod matcher_keyword;
-/// The [SymbolMatcher](matcher_symbol::SymbolMatcher)
-pub mod matcher_symbol;
-/// The [WhitespaceMatcher](matcher_whitespace::WhitespaceMatcher)
-pub mod matcher_whitespace;
-/// The [WordMatcher](matcher_word::WordMatcher)
-pub mod matcher_word;
+/// The results of a match
+pub mod token;
 
 use arrayvec::ArrayVec;
 use std::collections::HashMap;
@@ -149,6 +135,8 @@ use std::error::Error;
 use std::fmt;
 
 use crate::input::LexxInput;
+// use crate::matcher::Matcher;
+// use crate::matcher::MatcherResult::{Failed, Matched, Running};
 use crate::matcher::Matcher;
 use crate::matcher::MatcherResult::{Failed, Matched, Running};
 use crate::rolling_char_buffer::{RollingCharBuffer, RollingCharBufferError};
@@ -160,7 +148,7 @@ pub enum LexxError {
     /// no matcher matched the current character(s)
     TokenNotFound(String),
     /// some other error
-    Error(String)
+    Error(String),
 }
 
 impl fmt::Display for LexxError {
@@ -186,8 +174,37 @@ impl Error for LexxError {
     }
 }
 
-/// The lexer itself. Implements [Lexxer](Lexxer) so you can use `Box<dyn Lexxer>` and don't
+/// The lexer itself. Implements [Lexxer] so you can use `Box<dyn Lexxer>` and don't
 /// have to define the `CAP` in var declarations.
+///
+/// # Overview
+///
+/// `Lexx` is a fast, extensible, greedy, single-pass text tokenizer. It works by passing input characters
+/// from a [`LexxInput`] to a set of [`Matcher`] instances.
+/// Each matcher attempts to find the longest valid token at the current position. The matchers can be
+/// prioritized using precedence, allowing for flexible tokenization strategies (e.g., keywords vs. words).
+///
+/// The lexer maintains line and column information, supports lookahead, and allows rewinding tokens back into the stream.
+///
+/// # Type Parameter
+///
+/// * `CAP` - The maximum token size supported by this lexer instance. For speed, no dynamic allocation is performed.
+///   If a token exceeds this size, a panic will occur.
+///
+/// # Fields
+///
+/// * `matchers` - The array of matchers used to generate tokens.
+/// * `input` - The input source to be tokenized.
+/// * `cache` - Buffer for excess input characters and for supporting rewind.
+/// * `value` - Buffer for the current token being matched.
+/// * `lexx_result` - Stores the result of lookahead operations.
+/// * `found_token` - Most recent acceptable token found during matching.
+/// * `line`, `column` - Current line and column in the input.
+/// * `ctx` - Shared context for use by custom matchers.
+///
+/// # Example Usage
+///
+/// See the crate-level documentation for a complete example.
 #[derive(Debug)]
 pub struct Lexx<const CAP: usize> {
     /// The array of matcher used to generate tokens
@@ -218,9 +235,9 @@ impl<const CAP: usize> Lexx<CAP> {
     /// # Arguments
     ///
     /// * `input` - An instance of [LexxInput] that provides
-    /// the char stream that will be lexed.
+    ///   the char stream that will be lexed.
     /// * `matchers` - a [vec] of [Matcher]s that will be used to
-    /// generate Tokens.
+    ///   generate Tokens.
     ///
     /// # Examples
     ///
@@ -244,12 +261,10 @@ impl<const CAP: usize> Lexx<CAP> {
     fn get_token(&mut self) -> Result<Option<Token>, LexxError> {
         let mut precedence = 0;
         self.value.clear();
-        for m in self.matchers.as_mut_slice() {
+        for m in &mut self.matchers {
             m.reset(&mut self.ctx);
         }
-        if self.found_token.is_some() {
-            self.found_token = None;
-        }
+        self.found_token = None;
         loop {
             let c = if self.cache.is_empty() {
                 self.input.next()?
@@ -258,57 +273,41 @@ impl<const CAP: usize> Lexx<CAP> {
             };
             let mut found_token: Option<Token> = None;
             let mut running = false;
-
-            if c.is_some() {
-                self.value.push(c.unwrap());
+            if let Some(ch) = c {
+                self.value.push(ch);
             }
-
-            for m in self.matchers.as_mut_slice() {
+            for m in &mut self.matchers {
                 if m.is_running() {
-                    let int_result =
-                        m.find_match(c, &self.value[0..self.value.len()], &mut self.ctx);
-                    match int_result {
-                        Running() => {
-                            running = true;
-                        }
+                    match m.find_match(c, &self.value[..], &mut self.ctx) {
+                        Running() => running = true,
                         Matched(token) => {
-                            if found_token.is_some() {
+                            if let Some(ref _ft) = found_token {
                                 if precedence <= token.precedence {
                                     precedence = token.precedence;
                                     found_token = Some(token);
                                 }
                             } else {
                                 precedence = token.precedence;
-                                found_token = Some(token)
+                                found_token = Some(token);
                             }
                         }
                         Failed() => {}
                     }
                 }
             }
-
-            if found_token.is_some() {
-                let t = found_token;
-                if self.found_token.is_some() {
-                    if self.found_token.as_ref().unwrap().precedence
-                        <= t.as_ref().unwrap().precedence
-                    {
-                        self.found_token = t;
-                    }
-                } else {
-                    self.found_token = t;
+            if let Some(token) = found_token {
+                match &self.found_token {
+                    Some(ft) if ft.precedence <= token.precedence => self.found_token = Some(token),
+                    None => self.found_token = Some(token),
+                    _ => {}
                 }
             }
-
             if !running {
-                return if self.found_token.is_some() {
-                    let mut token = self.found_token.as_ref().unwrap().clone();
-                    self.found_token = None;
+                if let Some(mut token) = self.found_token.take() {
                     if self.value.len() > token.len {
-                        if let Err(e) = self.cache.prepend(&self.value[token.len..self.value.len()])
-                        {
+                        if let Err(e) = self.cache.prepend(&self.value[token.len..]) {
                             panic!("Ran out of buffer space: {}", e)
-                        };
+                        }
                     }
                     let l = self.line;
                     let c = self.column;
@@ -320,32 +319,33 @@ impl<const CAP: usize> Lexx<CAP> {
                     }
                     token.line = l;
                     token.column = c;
-                    Ok(Some(token))
+                    return Ok(Some(token));
                 } else {
-                    if c.is_none() {
-                        return Ok(None);
-                    }
-                    Err(LexxError::TokenNotFound(format!(
-                        "Could not resolve token at {}, {}: '{:?}'.",
-                        &self.line, &self.column, c
-                    )))
-                };
+                    return if c.is_none() {
+                        Ok(None)
+                    } else {
+                        Err(LexxError::TokenNotFound(format!(
+                            "Could not resolve token at {}, {}: '{:?}'.",
+                            self.line, self.column, c
+                        )))
+                    };
+                }
             }
             if c.is_none() {
                 return Ok(None);
             }
-        } // loop
+        }
     }
 }
 impl<const CAP: usize> Lexxer for Lexx<CAP> {
     ///
-    /// Returns the next [Result<Option<Token>, LexxError>](Result).
+    /// Returns the next `[Result<Option<Token>, LexxError>](Result)`.
     ///
-    /// The [Option] will be `None` if there is no remaining input (EOF)
+    /// The `[Option]` will be `None` if there is no remaining input (EOF)
     ///
     /// # Examples
     ///
-    /// See [lexx](crate)
+    /// See `[lexx](crate)`
     ///
     fn next_token(&mut self) -> Result<Option<Token>, LexxError> {
         if self.lexx_result.is_some() {
@@ -353,13 +353,17 @@ impl<const CAP: usize> Lexxer for Lexx<CAP> {
             self.lexx_result = None;
             return lr;
         }
-        return self.get_token();
+        self.get_token()
     }
 
     ///
-    /// Returns the next [Result<Option<Token>, LexxError>](Result). However the next call to [Lexx::next]
-    /// will return a clone of the same [Result<Option<Token>, LexxError>](Result). Likewise [Lexx::look_ahead]
-    /// can be called repeatedly to get a copy of the same [Result<Option<Token>, LexxError>](Result).
+    /// Returns the next `[Result<Option<Token>, LexxError>](Result)`. However the next call to `[Lexx::next_token]`
+    /// will return a clone of the same `[Result<Option<Token>, LexxError>](Result)`. Likewise `[Lexx::look_ahead]`
+    /// can be called repeatedly to get a copy of the same `[Result<Option<Token>, LexxError>](Result)`.
+    ///
+    /// * `Matched` - The next `[Token](Token)` found in the input.
+    /// * `EndOfInput` - No more chars in the given `[LexxInput](LexxInput)`.
+    /// * `Failed` - Something went wrong or no match could be made.
     ///
     /// # Examples
     ///
@@ -367,10 +371,10 @@ impl<const CAP: usize> Lexxer for Lexx<CAP> {
     /// use lexx::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_WORD, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_SYMBOL};
     /// use lexx::input::InputString;
     /// use lexx::{Lexx, Lexxer};
-    /// use lexx::matcher_exact::ExactMatcher;
-    /// use lexx::matcher_symbol::SymbolMatcher;
-    /// use lexx::matcher_whitespace::WhitespaceMatcher;
-    /// use lexx::matcher_word::WordMatcher;
+    /// use lexx::matcher::exact::ExactMatcher;
+    /// use lexx::matcher::symbol::SymbolMatcher;
+    /// use lexx::matcher::whitespace::WhitespaceMatcher;
+    /// use lexx::matcher::word::WordMatcher;
     ///
     /// let lexx_input = InputString::new(String::from("The quick\n\nbrown fox."));
     ///
@@ -388,6 +392,8 @@ impl<const CAP: usize> Lexxer for Lexx<CAP> {
     ///
     /// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "The" && t.token_type == TOKEN_TYPE_WORD && t.line == 1 && t.column == 1));
     /// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+    /// // Because the ExactMatcher is looking for `quick` with a precedence higher than
+    /// // that of the WordMatcher it will return a match for `quick`.
     /// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "quick" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 5));
     /// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
     /// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "brown" && t.token_type == TOKEN_TYPE_WORD && t.line == 3 && t.column == 1));
@@ -396,6 +402,7 @@ impl<const CAP: usize> Lexxer for Lexx<CAP> {
     /// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "." && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 3 && t.column == 10));
     /// assert!(matches!(lexx.next_token(), Ok(None)));
     /// ```
+    ///
     fn look_ahead(&mut self) -> Result<Option<Token>, LexxError> {
         if self.lexx_result.is_some() {
             self.lexx_result.clone().unwrap()
@@ -429,7 +436,7 @@ impl<const CAP: usize> Lexxer for Lexx<CAP> {
     /// If you're done tokenizing something you can tokenize something else with
     /// all the same matchers without having to make a new Lexx.
     ///
-    /// * `input` - An instance of [LexxInput](LexxInput) that provides the char stream that will be lexed.
+    /// * `input` - An instance of `[LexxInput](LexxInput)` that provides the char stream that will be lexed.
     ///
     fn set_input(&mut self, input: Box<dyn LexxInput>) {
         self.input = input;
@@ -444,7 +451,7 @@ impl<const CAP: usize> Lexxer for Lexx<CAP> {
 /// `CAP` in var declarations.
 pub trait Lexxer {
     ///
-    /// Returns the next [Result<Option<Token>, LexxError>].
+    /// Returns the next `[Result<Option<Token>, LexxError>](Result)`.
     ///
     /// The [Option] will be `None` if there is no remaining input (EOF)
     ///
@@ -455,23 +462,23 @@ pub trait Lexxer {
     fn next_token(&mut self) -> Result<Option<Token>, LexxError>;
 
     ///
-    /// Returns the next [Result<Option<Token>, LexxError>](Result). However the next call to [Lexx::next_token]
-    /// will return a clone of the same [Result<Option<Token>, LexxError>](Result). Likewise [Lexx::look_ahead]
-    /// can be called repeatedly to get a copy of the same [Result<Option<Token>, LexxError>](Result).
+    /// Returns the next `[Result<Option<Token>, LexxError>](Result)`. However, the next call to [Lexx::next_token]
+    /// will return a clone of the same `[Result<Option<Token>, LexxError>](Result)`. Likewise, [Lexx::look_ahead]
+    /// can be called repeatedly to get a copy of the same `[Result<Option<Token>, LexxError>](Result)`.
     ///
-    /// * `Matched` - The next [Token](Token) found in the input.
-    /// * `EndOfInput` - No more chars in the given [LexxInput](LexxInput).
-    /// * `Failed` - Something went wrong or no match could be made.
+    /// * `Matched` - The next `[Token](Token)` found in the input.
+    /// * `EndOfInput` - No more chars in the given `[LexxInput](LexxInput)`.
+    /// * `Failed` - Something went wrong, or no match could be made.
     ///
     /// # Examples
     ///
     /// ```rust
-    /// use lexx::{Lexx, Lexxer};
     /// use lexx::token::{TOKEN_TYPE_WORD};
     /// use lexx::token::TOKEN_TYPE_WHITESPACE;
     /// use lexx::input::InputString;
-    /// use lexx::matcher_whitespace::WhitespaceMatcher;
-    /// use lexx::matcher_word::WordMatcher;
+    /// use lexx::{Lexx, Lexxer};
+    /// use lexx::matcher::whitespace::WhitespaceMatcher;
+    /// use lexx::matcher::word::WordMatcher;
     ///
     /// let lexx_input = InputString::new(String::from("The quick brown fox"));
     ///
@@ -516,7 +523,7 @@ pub trait Lexxer {
     /// If you're done tokenizing something you can tokenize something else with
     /// all the same matchers without having to make a new Lexx.
     ///
-    /// * `input` - An instance of [LexxInput](LexxInput) that provides the char stream that will be lexed.
+    /// * `input` - An instance of `[LexxInput](LexxInput)` that provides the char stream that will be lexed.
     ///
     fn set_input(&mut self, input: Box<dyn LexxInput>);
 }
@@ -541,12 +548,12 @@ impl<const CAP: usize> Iterator for Lexx<CAP> {
 
 #[cfg(test)]
 mod tests {
-    use crate::matcher_exact::ExactMatcher;
-    use crate::matcher_whitespace::WhitespaceMatcher;
-    use crate::matcher_word::WordMatcher;
-    use crate::{Lexx, Lexxer, Token};
     use crate::input::InputString;
+    use crate::matcher::exact::ExactMatcher;
+    use crate::matcher::whitespace::WhitespaceMatcher;
+    use crate::matcher::word::WordMatcher;
     use crate::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_WHITESPACE};
+    use crate::{Lexx, Lexxer, Token};
 
     #[test]
     fn lexx_test_precedence() {
