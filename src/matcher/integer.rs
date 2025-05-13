@@ -291,7 +291,7 @@ mod tests {
         matcher.reset(&mut ctx);
 
         assert_eq!(matcher.index, 0);
-        assert_eq!(matcher.running, true);
+        assert!(matcher.running);
     }
 
     #[test]
