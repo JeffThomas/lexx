@@ -31,7 +31,3 @@ harness = false
 [[bench]]
 name = "rolling_char_buffer_bench"
 harness = false
-
-[[bench]]
-name = "gutenberg_lexx"
-harness = false
