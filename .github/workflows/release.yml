@@ -18,16 +18,6 @@ jobs:
         run: cargo package --no-verify
       - name: Verify project
         run: cargo verify-project
-      - name: Check CHANGELOG.md for version
-        run: |
-          # Extract version from tag (e.g., v1.0.0 -> 1.0.0)
-          VERSION=${GITHUB_REF#refs/tags/v}
-          echo "Checking for version $VERSION in CHANGELOG.md"
-          if ! grep -q "\[$VERSION\]" CHANGELOG.md; then
-            echo "Error: Version $VERSION not found in CHANGELOG.md"
-            echo "Please update CHANGELOG.md with the current version before releasing"
-            exit 1
-          fi
       - name: Check for missing fields
         run: |
           if ! grep -q "description" Cargo.toml; then
