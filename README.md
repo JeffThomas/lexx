@@ -1,10 +1,10 @@
 # Lexx
 
-A fast, extensible, greedy, single-pass text tokenizer implemented in Rust. Lexx is designed for high-performance tokenization with minimal memory allocations, making it suitable for parsing large files or real-time text processing.
+A fast, extensible, greedy, single-pass text tokenizer implemented in Rust. Lexxor is designed for high-performance tokenization with minimal memory allocations, making it suitable for parsing large files or real-time text processing.
 
 ## Overview
 
-Lexx is a tokenizer library that allows you to define and compose various token matching strategies. It processes input character-by-character, identifying the longest possible match at each position using a set of configurable matchers. It includes a precedence mechanism for resolving matcher conflicts.
+Lexxor is a tokenizer library that allows you to define and compose various token matching strategies. It processes input character-by-character, identifying the longest possible match at each position using a set of configurable matchers. It includes a precedence mechanism for resolving matcher conflicts.
 
 ## Key Features
 
@@ -17,16 +17,16 @@ Lexx is a tokenizer library that allows you to define and compose various token 
 
 ## Architecture
 
-Lexx consists of four main components:
+Lexxor consists of four main components:
 
-1. **LexxInput**: Provides a stream of characters from various sources
+1. **LexxorInput**: Provides a stream of characters from various sources
 2. **Matchers**: Identify specific patterns in the input (words, numbers, symbols, etc.)
 3. **Tokens**: Represent the results of successful matches
-4. **Lexx Engine**: Orchestrates the tokenization process
+4. **Lexxor Engine**: Orchestrates the tokenization process
 
 ### Built-in Matchers
 
-Lexx provides several built-in matchers for common token types:
+Lexxor provides several built-in matchers for common token types:
 
 - `WordMatcher`: Matches alphabetic words
 - `IntegerMatcher`: Matches integer numbers
@@ -45,20 +45,20 @@ Matchers can be assigned precedence values to resolve conflicts when multiple ma
 ### Basic Tokenization
 
 ```rust
-use lexx::Lexx;
-use lexx::input::InputString;
-use lexx::matcher::word::WordMatcher;
-use lexx::matcher::whitespace::WhitespaceMatcher;
-use lexx::matcher::symbol::SymbolMatcher;
-use lexx::matcher::integer::IntegerMatcher;
-use lexx::matcher::float::FloatMatcher;
+use Lexxor::Lexx;
+use Lexxor::input::InputString;
+use Lexxor::matcher::word::WordMatcher;
+use Lexxor::matcher::whitespace::WhitespaceMatcher;
+use Lexxor::matcher::symbol::SymbolMatcher;
+use Lexxor::matcher::integer::IntegerMatcher;
+use Lexxor::matcher::float::FloatMatcher;
 
 fn main() {
     // Create a simple input string
     let input_text = "Hello world! This is 42 and 3.14159.";
     let input = InputString::new(input_text.to_string());
     
-    // Create a Lexx tokenizer with standard matchers
+    // Create a Lexxor tokenizer with standard matchers
     let lexx = Lexx::<512>::new(
         Box::new(input),
         vec![
@@ -82,8 +82,8 @@ fn main() {
 You can create custom matchers by implementing the `Matcher` trait:
 
 ```rust
-use lexx::matcher::{Matcher, MatcherResult};
-use lexx::token::{Token, TOKEN_TYPE_CUSTOM};
+use Lexxor::matcher::{Matcher, MatcherResult};
+use Lexxor::token::{Token, TOKEN_TYPE_CUSTOM};
 use std::collections::HashMap;
 use std::fmt::Debug;
 
@@ -125,7 +125,7 @@ impl Matcher for HexColorMatcher {
 
 ## Performance
 
-Lexx is optimized for high-performance tokenization:
+Lexxor is optimized for high-performance tokenization:
 
 | Benchmark | Time |
 |-----------|------|
@@ -137,22 +137,22 @@ These benchmarks were measured on standard hardware. Your results may vary depen
 
 ### Performance Considerations
 
-- Lexx uses a fixed-size buffer for token storage, specified as `Lexx<CAP>` where `CAP` is the maximum token size
-- If a token exceeds this size, Lexx will panic
+- Lexxor uses a fixed-size buffer for token storage, specified as `Lexx<CAP>` where `CAP` is the maximum token size
+- If a token exceeds this size, Lexxor will panic
 - Choose an appropriate buffer size for your use case to balance memory usage and token size limits
 
 ## Installation
 
-Add Lexx to your `Cargo.toml`:
+Add Lexxor to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-lexx = "0.1.0"
+lexxor = "0.1.0"
 ```
 
 ## Token Types
 
-Lexx defines several standard token types:
+Lexxor defines several standard token types:
 
 - `TOKEN_TYPE_WHITESPACE` (3): Whitespace characters
 - `TOKEN_TYPE_WORD` (4): Word tokens (alphabetic characters)
@@ -166,16 +166,16 @@ You can define custom token types starting from higher numbers (e.g., 100+) for 
 
 ## Input Sources
 
-Lexx supports multiple input sources through the `LexxInput` trait:
+Lexxor supports multiple input sources through the `LexxorInput` trait:
 
 - `InputString`: Tokenize from a String
 - `InputReader`: Tokenize from any source implementing `Read`
 
-You can implement custom input sources by implementing the `LexxInput` trait.
+You can implement custom input sources by implementing the `LexxorInput` trait.
 
 ## Error Handling
 
-Lexx returns `LexxError` in two cases:
+Lexxor returns `LexxError` in two cases:
 
 - `TokenNotFound`: No matcher could match the current input
 - `Error`: Some other error occurred during tokenization

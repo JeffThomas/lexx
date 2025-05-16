@@ -1,7 +1,7 @@
-use lexx::input::InputString;
-use lexx::matcher::{Matcher, MatcherResult};
-use lexx::token::{TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD, Token};
-use lexx::{Lexx, Lexxer};
+use lexxor::input::InputString;
+use lexxor::matcher::{Matcher, MatcherResult};
+use lexxor::token::{TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD, Token};
+use lexxor::{Lexxer, Lexxor};
 use std::collections::HashMap;
 use std::fmt::Debug;
 
@@ -61,8 +61,8 @@ impl HexColorMatcher {
             value: token_value,
             token_type: TOKEN_TYPE_HEX_COLOR,
             len: self.index,
-            line: 0,   // This will be set by the Lexx tokenizer
-            column: 0, // This will be set by the Lexx tokenizer
+            line: 0,   // This will be set by the Lexxor tokenizer
+            column: 0, // This will be set by the Lexxor tokenizer
             precedence: self.precedence,
         })
     }
@@ -142,11 +142,11 @@ fn main() {
     let text = "The background color is #FF5500 and the text color is #123. Invalid codes: #GGHHII, #12, #1234567.";
     let input = InputString::new(text.to_string());
 
-    // Create a Lexx tokenizer with our custom HexColorMatcher
-    let mut lexx = Lexx::<512>::new(
+    // Create a Lexxor tokenizer with our custom HexColorMatcher
+    let mut lexxor = Lexxor::<512>::new(
         Box::new(input),
         vec![
-            Box::new(lexx::matcher::whitespace::WhitespaceMatcher {
+            Box::new(lexxor::matcher::whitespace::WhitespaceMatcher {
                 index: 0,
                 column: 0,
                 line: 0,
@@ -155,17 +155,17 @@ fn main() {
             }),
             // Our custom matcher with high precedence to ensure it gets matched before symbols
             Box::new(HexColorMatcher::new(3)),
-            Box::new(lexx::matcher::word::WordMatcher {
+            Box::new(lexxor::matcher::word::WordMatcher {
                 index: 0,
                 precedence: 0,
                 running: true,
             }),
-            Box::new(lexx::matcher::integer::IntegerMatcher {
+            Box::new(lexxor::matcher::integer::IntegerMatcher {
                 index: 0,
                 precedence: 0,
                 running: true,
             }),
-            Box::new(lexx::matcher::symbol::SymbolMatcher {
+            Box::new(lexxor::matcher::symbol::SymbolMatcher {
                 index: 0,
                 precedence: 0,
                 running: true,
@@ -177,14 +177,14 @@ fn main() {
     println!("{}", "-".repeat(70));
 
     loop {
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(token)) => {
                 let type_name = match token.token_type {
                     TOKEN_TYPE_HEX_COLOR => "HEX_COLOR",
                     TOKEN_TYPE_WORD => "WORD",
                     TOKEN_TYPE_WHITESPACE => "WHITESPACE",
                     TOKEN_TYPE_SYMBOL => "SYMBOL",
-                    lexx::token::TOKEN_TYPE_INTEGER => "INTEGER",
+                    lexxor::token::TOKEN_TYPE_INTEGER => "INTEGER",
                     _ => "OTHER",
                 };
 

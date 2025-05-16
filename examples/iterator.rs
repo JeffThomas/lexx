@@ -1,18 +1,18 @@
-use lexx::Lexx;
-use lexx::input::InputString;
-use lexx::matcher::float::FloatMatcher;
-use lexx::matcher::integer::IntegerMatcher;
-use lexx::matcher::symbol::SymbolMatcher;
-use lexx::matcher::whitespace::WhitespaceMatcher;
-use lexx::matcher::word::WordMatcher;
+use lexxor::Lexxor;
+use lexxor::input::InputString;
+use lexxor::matcher::float::FloatMatcher;
+use lexxor::matcher::integer::IntegerMatcher;
+use lexxor::matcher::symbol::SymbolMatcher;
+use lexxor::matcher::whitespace::WhitespaceMatcher;
+use lexxor::matcher::word::WordMatcher;
 
 fn main() {
     // Create a simple input string
     let input_text = "Hello world! This is 42 and 3.14159.";
     let input = InputString::new(input_text.to_string());
 
-    // Create a Lexx tokenizer with standard matchers
-    let lexx = Lexx::<512>::new(
+    // Create a Lexxor tokenizer with standard matchers
+    let lexxor = Lexxor::<512>::new(
         Box::new(input),
         vec![
             Box::new(WhitespaceMatcher {
@@ -48,7 +48,7 @@ fn main() {
     );
 
     // Process tokens using the Iterator interface
-    for token in lexx {
+    for token in lexxor {
         println!("{}", token);
     }
 }

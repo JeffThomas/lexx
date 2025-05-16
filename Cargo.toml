@@ -1,5 +1,5 @@
 [package]
-name = "lexx"
+name = "lexxor"
 version = "0.9.0"
 edition = "2024"
 description = "A fast, extensible, greedy, single-pass text tokenizer for Rust"
@@ -14,7 +14,7 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "lexx"
+name = "lexxor"
 path = "src/lib.rs"
 
 [dependencies]
@@ -25,7 +25,7 @@ criterion = "0.5"
 rand = "0.9.1"
 
 [[bench]]
-name = "lexx_bench"
+name = "lexxor_bench"
 harness = false
 
 [[bench]]

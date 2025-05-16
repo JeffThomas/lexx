@@ -17,7 +17,7 @@ $resultFile = "$benchmarkDir\benchmark_$timestamp.md"
 
 # Create the markdown file
 @"
-# Lexx Benchmark Results
+# Lexxor Benchmark Results
 Generated on $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
 
 ## Results

@@ -9,15 +9,15 @@ use std::collections::HashMap;
 /// # Example
 ///
 /// ```rust
-/// use lexx::{Lexx, Lexxer};
-/// use lexx::token::{TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL};
-/// use lexx::input::InputString;
-/// use lexx::matcher::float::FloatMatcher;
-/// use lexx::matcher::integer::IntegerMatcher;
-/// use lexx::matcher::symbol::SymbolMatcher;
-/// use lexx::matcher::whitespace::WhitespaceMatcher;
+/// use lexxor::{Lexxor, Lexxer};
+/// use lexxor::token::{TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL};
+/// use lexxor::input::InputString;
+/// use lexxor::matcher::float::FloatMatcher;
+/// use lexxor::matcher::integer::IntegerMatcher;
+/// use lexxor::matcher::symbol::SymbolMatcher;
+/// use lexxor::matcher::whitespace::WhitespaceMatcher;
 ///
-/// let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
+/// let mut lexxor: Box<dyn Lexxer> = Box::new(Lexxor::<512>::new(
 /// Box::new(InputString::new(String::from("1.0 5 0.012345 .9 00.00 100.0 4."))),
 /// vec![
 ///     Box::new(FloatMatcher{ index: 0, precedence: 0, dot: false, float:false, running: true }),
@@ -27,22 +27,22 @@ use std::collections::HashMap;
 /// ]
 /// ));
 ///
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "1.0" && t.token_type == TOKEN_TYPE_FLOAT && t.line == 1 && t.column == 1));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "5" && t.token_type == TOKEN_TYPE_INTEGER && t.line == 1 && t.column == 5));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "0.012345" && t.token_type == TOKEN_TYPE_FLOAT && t.line == 1 && t.column == 7));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "." && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 16));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "9" && t.token_type == TOKEN_TYPE_INTEGER && t.line == 1 && t.column == 17));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "00.00" && t.token_type == TOKEN_TYPE_FLOAT && t.line == 1 && t.column == 19));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "100.0" && t.token_type == TOKEN_TYPE_FLOAT && t.line == 1 && t.column == 25));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "4" && t.token_type == TOKEN_TYPE_INTEGER && t.line == 1 && t.column == 31));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "." && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 32));
-/// assert!(matches!(lexx.next_token(), Ok(None)));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "1.0" && t.token_type == TOKEN_TYPE_FLOAT && t.line == 1 && t.column == 1));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "5" && t.token_type == TOKEN_TYPE_INTEGER && t.line == 1 && t.column == 5));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "0.012345" && t.token_type == TOKEN_TYPE_FLOAT && t.line == 1 && t.column == 7));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "." && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 16));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "9" && t.token_type == TOKEN_TYPE_INTEGER && t.line == 1 && t.column == 17));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "00.00" && t.token_type == TOKEN_TYPE_FLOAT && t.line == 1 && t.column == 19));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "100.0" && t.token_type == TOKEN_TYPE_FLOAT && t.line == 1 && t.column == 25));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "4" && t.token_type == TOKEN_TYPE_INTEGER && t.line == 1 && t.column == 31));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "." && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 32));
+/// assert!(matches!(lexxor.next_token(), Ok(None)));
 /// ```
 #[derive(Clone, Debug, Copy)]
 pub struct FloatMatcher {
@@ -128,11 +128,11 @@ mod tests {
     use crate::matcher::symbol::SymbolMatcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::token::TOKEN_TYPE_FLOAT;
-    use crate::{Lexx, LexxError, Lexxer};
+    use crate::{LexxError, Lexxer, Lexxor};
 
     #[test]
     fn matcher_float_matches_simple_float() {
-        let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
+        let mut lexxor: Box<dyn Lexxer> = Box::new(Lexxor::<512>::new(
             Box::new(InputString::new(String::from("1.0"))),
             vec![Box::new(FloatMatcher {
                 index: 0,
@@ -143,7 +143,7 @@ mod tests {
             })],
         ));
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -164,7 +164,7 @@ mod tests {
 
     #[test]
     fn matcher_float_matches_decimal_float() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("0.012345"))),
             vec![Box::new(FloatMatcher {
                 index: 0,
@@ -175,7 +175,7 @@ mod tests {
             })],
         );
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -196,7 +196,7 @@ mod tests {
 
     #[test]
     fn matcher_float_matches_leading_zeros() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("00.00"))),
             vec![Box::new(FloatMatcher {
                 index: 0,
@@ -207,7 +207,7 @@ mod tests {
             })],
         );
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -228,7 +228,7 @@ mod tests {
 
     #[test]
     fn matcher_float_does_not_match_dot_first() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from(".9"))),
             vec![
                 Box::new(FloatMatcher {
@@ -247,7 +247,7 @@ mod tests {
         );
 
         // Should match the dot as a symbol
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(t)) => {
                 assert_eq!(t.value, ".");
                 assert_eq!(t.token_type, crate::token::TOKEN_TYPE_SYMBOL);
@@ -260,7 +260,7 @@ mod tests {
 
     #[test]
     fn matcher_float_does_not_match_dot_last() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("4."))),
             vec![
                 Box::new(FloatMatcher {
@@ -284,7 +284,7 @@ mod tests {
         );
 
         // Should not match as a float
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(t)) => {
                 assert_ne!(t.token_type, TOKEN_TYPE_FLOAT);
             }
@@ -296,7 +296,7 @@ mod tests {
 
     #[test]
     fn matcher_float_matches_multiple() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("1.0 2.5 3.14"))),
             vec![
                 Box::new(FloatMatcher {
@@ -317,7 +317,7 @@ mod tests {
         );
 
         // First float
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(t)) => {
                 assert_eq!(t.value, "1.0");
                 assert_eq!(t.token_type, TOKEN_TYPE_FLOAT);
@@ -329,11 +329,11 @@ mod tests {
 
         // Whitespace
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == crate::token::TOKEN_TYPE_WHITESPACE)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == crate::token::TOKEN_TYPE_WHITESPACE)
         );
 
         // Second float
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(t)) => {
                 assert_eq!(t.value, "2.5");
                 assert_eq!(t.token_type, TOKEN_TYPE_FLOAT);
@@ -345,11 +345,11 @@ mod tests {
 
         // Whitespace
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == crate::token::TOKEN_TYPE_WHITESPACE)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == crate::token::TOKEN_TYPE_WHITESPACE)
         );
 
         // Third float
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(t)) => {
                 assert_eq!(t.value, "3.14");
                 assert_eq!(t.token_type, TOKEN_TYPE_FLOAT);

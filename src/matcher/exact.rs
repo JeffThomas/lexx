@@ -20,16 +20,16 @@ pub struct Target {
 /// # Example
 ///
 /// ```rust
-/// use lexx::{Lexx, Lexxer};
-/// use lexx::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
-/// use lexx::input::InputString;
-/// use lexx::matcher::exact::ExactMatcher;
-/// use lexx::matcher::symbol::SymbolMatcher;
+/// use lexxor::{Lexxor, Lexxer};
+/// use lexxor::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
+/// use lexxor::input::InputString;
+/// use lexxor::matcher::exact::ExactMatcher;
+/// use lexxor::matcher::symbol::SymbolMatcher;
 ///
-/// let lexx_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
+/// let lexxor_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
 ///
-/// let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
-///     Box::new(lexx_input),
+/// let mut lexxor: Box<dyn Lexxer> = Box::new(Lexxor::<512>::new(
+///     Box::new(lexxor_input),
 ///     vec![
 ///         Box::new(SymbolMatcher { index: 0, precedence: 0, running: true }),
 ///         // Note the precedence of 1 will cause the ExactMatcher to be be returned
@@ -40,17 +40,17 @@ pub struct Target {
 ///
 /// // Because of the precedence settings the ExactMatcher matched "^"
 /// // even though the SymbolMtcher would have matched "^%$"
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "^" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 1));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "%$" && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 2));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "^" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 1));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "%$" && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 2));
 /// // NOTE that "$gxv " is NOT found because the symbol matcher matched "%$"
 /// // the ExactMatcher gave up at '%' and never saw '$gxv '
 /// // matchers can not find matches that start inside the valid matches of other matchers.
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "gxv " && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 4));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "llj)9" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 8));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "^" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 13));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "%" && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 14));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "d$rrr" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 15));
-/// assert!(matches!(lexx.next_token(), Ok(None)));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "gxv " && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 4));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "llj)9" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 8));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "^" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 13));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "%" && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 14));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "d$rrr" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 15));
+/// assert!(matches!(lexxor.next_token(), Ok(None)));
 /// ```
 #[derive(Clone, Debug)]
 pub struct ExactMatcher {
@@ -197,11 +197,11 @@ mod tests {
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::matcher::{Matcher, MatcherResult};
     use crate::token::TOKEN_TYPE_EXACT;
-    use crate::{Lexx, LexxError, Lexxer};
+    use crate::{LexxError, Lexxer, Lexxor};
 
     #[test]
     fn matcher_exact_matches_word() {
-        let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
+        let mut lexxor: Box<dyn Lexxer> = Box::new(Lexxor::<512>::new(
             Box::new(InputString::new(String::from("The"))),
             vec![Box::new(ExactMatcher::build_exact_matcher(
                 vec!["The"],
@@ -210,7 +210,7 @@ mod tests {
             ))],
         ));
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -232,7 +232,7 @@ mod tests {
     #[test]
     fn matcher_exact_matches_multiple_words() {
         use crate::token::TOKEN_TYPE_WHITESPACE;
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("The quick brown fox qquick"))),
             vec![
                 Box::new(ExactMatcher::build_exact_matcher(
@@ -250,16 +250,24 @@ mod tests {
             ],
         );
 
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "The"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "quick"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "brown"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "fox"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "The"));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "quick"));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "brown"));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "fox"));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -282,7 +290,7 @@ mod tests {
     #[test]
     fn matcher_exact_matches_multiple_words_and_lines() {
         use crate::token::TOKEN_TYPE_WHITESPACE;
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from(
                 "The quick\rbrown\rfox jumped\rover the lazy dog",
             ))),
@@ -304,23 +312,39 @@ mod tests {
             ],
         );
 
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "The"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "quick"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "brown"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "fox"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "jumped"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "over"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "the"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "lazy"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        match lexx.next_token() {
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "The"));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "quick"));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "brown"));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "fox"));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "jumped"));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "over"));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "the"));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "lazy"));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -342,7 +366,7 @@ mod tests {
 
     #[test]
     fn matcher_exact_matches_partial_word() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("Then"))),
             vec![Box::new(ExactMatcher::build_exact_matcher(
                 vec!["The"],
@@ -351,7 +375,7 @@ mod tests {
             ))],
         );
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -372,13 +396,13 @@ mod tests {
 
     #[test]
     fn example_test() {
-        use crate::Lexx;
+        use crate::Lexxor;
         use crate::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
 
-        let lexx_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
+        let lexxor_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
 
-        let mut lexx = Lexx::<512>::new(
-            Box::new(lexx_input),
+        let mut lexxor = Lexxor::<512>::new(
+            Box::new(lexxor_input),
             vec![
                 Box::new(SymbolMatcher {
                     index: 0,
@@ -396,33 +420,33 @@ mod tests {
         );
 
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "^" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 1)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "^" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 1)
         );
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "%$" && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 2)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "%$" && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 2)
         );
         // NOTE that "$gxv " is NOT found because the symbol matcher ate "%$"
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "gxv " && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 4)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "gxv " && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 4)
         );
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "llj)9" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 8)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "llj)9" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 8)
         );
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "^" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 13)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "^" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 13)
         );
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "%" && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 14)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "%" && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 14)
         );
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "d$rrr" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 15)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "d$rrr" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 15)
         );
     }
 
     #[test]
     fn test_overlapping_matches_with_precedence() {
         // Test that when multiple matches are possible, the one with higher precedence wins
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("abcdef"))),
             vec![
                 Box::new(ExactMatcher::build_exact_matcher(
@@ -440,12 +464,12 @@ mod tests {
 
         // The matcher with higher precedence should win, even though the other would match more
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "abc" && t.token_type == TOKEN_TYPE_EXACT)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "abc" && t.token_type == TOKEN_TYPE_EXACT)
         );
 
         // The remaining text should not match anything
         assert!(matches!(
-            lexx.next_token(),
+            lexxor.next_token(),
             Err(LexxError::TokenNotFound(_))
         ));
     }
@@ -453,7 +477,7 @@ mod tests {
     #[test]
     fn test_case_sensitivity() {
         // Test that matching is case-sensitive
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("The THE the"))),
             vec![Box::new(ExactMatcher::build_exact_matcher(
                 vec!["The", "the"],
@@ -464,12 +488,12 @@ mod tests {
 
         // Should match "The" exactly
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "The" && t.token_type == TOKEN_TYPE_EXACT)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "The" && t.token_type == TOKEN_TYPE_EXACT)
         );
 
         // "THE" is not in the target list, so it should not be matched
         assert!(matches!(
-            lexx.next_token(),
+            lexxor.next_token(),
             Err(LexxError::TokenNotFound(_))
         ));
     }
@@ -477,7 +501,7 @@ mod tests {
     #[test]
     fn test_unicode_character_handling() {
         // Test that Unicode characters are handled correctly
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("こんにちは世界"))),
             vec![Box::new(ExactMatcher::build_exact_matcher(
                 vec!["こんにちは", "世界"],
@@ -488,16 +512,16 @@ mod tests {
 
         // Should match "こんにちは" exactly
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "こんにちは" && t.token_type == TOKEN_TYPE_EXACT)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "こんにちは" && t.token_type == TOKEN_TYPE_EXACT)
         );
 
         // Should match "世界" exactly
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.value == "世界" && t.token_type == TOKEN_TYPE_EXACT)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "世界" && t.token_type == TOKEN_TYPE_EXACT)
         );
 
         // No more tokens
-        assert!(matches!(lexx.next_token(), Ok(None)));
+        assert!(matches!(lexxor.next_token(), Ok(None)));
     }
 
     #[test]
@@ -536,7 +560,7 @@ mod tests {
     #[test]
     fn test_empty_targets_list() {
         // Test behavior with an empty targets list
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("abc"))),
             vec![Box::new(ExactMatcher::build_exact_matcher(
                 vec![],
@@ -547,7 +571,7 @@ mod tests {
 
         // Should fail to match anything with an empty targets list
         assert!(matches!(
-            lexx.next_token(),
+            lexxor.next_token(),
             Err(LexxError::TokenNotFound(_))
         ));
     }

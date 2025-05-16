@@ -1,10 +1,10 @@
-use lexx::input::InputReader;
-use lexx::matcher::integer::IntegerMatcher;
-use lexx::matcher::symbol::SymbolMatcher;
-use lexx::matcher::whitespace::WhitespaceMatcher;
-use lexx::matcher::word::WordMatcher;
-use lexx::token::TOKEN_TYPE_WORD;
-use lexx::{Lexx, Lexxer};
+use lexxor::input::InputReader;
+use lexxor::matcher::integer::IntegerMatcher;
+use lexxor::matcher::symbol::SymbolMatcher;
+use lexxor::matcher::whitespace::WhitespaceMatcher;
+use lexxor::matcher::word::WordMatcher;
+use lexxor::token::TOKEN_TYPE_WORD;
+use lexxor::{Lexxer, Lexxor};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
@@ -19,8 +19,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let reader = BufReader::new(file);
     let input = InputReader::new(Box::new(reader));
 
-    // Create a Lexx tokenizer for processing the file
-    let mut lexx = Lexx::<512>::new(
+    // Create a Lexxor tokenizer for processing the file
+    let mut lexxor = Lexxor::<512>::new(
         Box::new(input),
         vec![
             Box::new(WhitespaceMatcher {
@@ -57,7 +57,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Process tokens until we've found 20 words or EOF
     while word_count < 20 {
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(token)) => {
                 total_tokens += 1;
 
