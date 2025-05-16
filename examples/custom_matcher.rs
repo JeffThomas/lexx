@@ -1,7 +1,7 @@
 use lexxor::input::InputString;
 use lexxor::matcher::{Matcher, MatcherResult};
 use lexxor::token::{TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD, Token};
-use lexxor::{Lexxor, Lexxer};
+use lexxor::{Lexxer, Lexxor};
 use std::collections::HashMap;
 use std::fmt::Debug;
 

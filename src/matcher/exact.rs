@@ -197,7 +197,7 @@ mod tests {
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::matcher::{Matcher, MatcherResult};
     use crate::token::TOKEN_TYPE_EXACT;
-    use crate::{Lexxor, LexxError, Lexxer};
+    use crate::{LexxError, Lexxer, Lexxor};
 
     #[test]
     fn matcher_exact_matches_word() {
@@ -251,13 +251,21 @@ mod tests {
         );
 
         assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "The"));
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "quick"));
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "brown"));
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "fox"));
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
 
         match lexxor.next_token() {
             Err(e) => match e {
@@ -305,21 +313,37 @@ mod tests {
         );
 
         assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "The"));
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "quick"));
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "brown"));
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "fox"));
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "jumped"));
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "over"));
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "the"));
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "lazy"));
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {

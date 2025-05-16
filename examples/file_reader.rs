@@ -4,7 +4,7 @@ use lexxor::matcher::symbol::SymbolMatcher;
 use lexxor::matcher::whitespace::WhitespaceMatcher;
 use lexxor::matcher::word::WordMatcher;
 use lexxor::token::TOKEN_TYPE_WORD;
-use lexxor::{Lexxor, Lexxer};
+use lexxor::{Lexxer, Lexxor};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;

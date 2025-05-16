@@ -7,7 +7,7 @@ use lexxor::matcher::keyword::KeywordMatcher;
 use lexxor::matcher::symbol::SymbolMatcher;
 use lexxor::matcher::whitespace::WhitespaceMatcher;
 use lexxor::matcher::word::WordMatcher;
-use lexxor::{Lexxor, Lexxer};
+use lexxor::{Lexxer, Lexxor};
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 

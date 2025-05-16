@@ -553,7 +553,7 @@ mod tests {
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::matcher::word::WordMatcher;
     use crate::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_WHITESPACE};
-    use crate::{Lexxor, Lexxer, Token};
+    use crate::{Lexxer, Lexxor, Token};
 
     #[test]
     fn lexxor_test_precedence() {
@@ -619,7 +619,9 @@ mod tests {
         );
 
         assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "The"));
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         assert!(
             matches!(lexxor.look_ahead(), Ok(Some(t)) if t.value == "lazy" && t.line == 1 && t.column == 5 && t.len == 4)
         );
@@ -629,7 +631,9 @@ mod tests {
         assert!(
             matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "lazy" && t.line == 1 && t.column == 5 && t.len == 4)
         );
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         assert!(
             matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "dog" && t.line == 1 && t.column == 10 && t.len == 3)
         );
@@ -685,7 +689,9 @@ mod tests {
         assert!(
             matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "lazy" && t.line == 1 && t.column == 5 && t.len == 4)
         );
-        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE)
+        );
         assert!(
             matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "dog" && t.line == 1 && t.column == 10 && t.len == 3)
         );

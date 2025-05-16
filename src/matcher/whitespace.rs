@@ -116,7 +116,7 @@ mod tests {
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::matcher::word::WordMatcher;
     use crate::token::TOKEN_TYPE_WHITESPACE;
-    use crate::{Lexxor, Lexxer};
+    use crate::{Lexxer, Lexxor};
     use std::collections::HashMap;
 
     #[test]

@@ -270,7 +270,7 @@ mod tests {
         TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE,
         TOKEN_TYPE_WORD, Token,
     };
-    use crate::{Lexxor, LexxError, Lexxer};
+    use crate::{LexxError, Lexxer, Lexxor};
 
     #[test]
     fn lexxor_parse_large_file() {

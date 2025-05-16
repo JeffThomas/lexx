@@ -110,7 +110,7 @@ mod tests {
     use crate::matcher::Matcher;
     use crate::matcher::integer::IntegerMatcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
-    use crate::{Lexxor, LexxError, Lexxer};
+    use crate::{LexxError, Lexxer, Lexxor};
 
     #[test]
     fn matcher_integer_matches_integer() {

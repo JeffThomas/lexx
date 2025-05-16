@@ -9,7 +9,7 @@ use lexxor::token::{
     TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_KEYWORD, TOKEN_TYPE_SYMBOL,
     TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD,
 };
-use lexxor::{Lexxor, Lexxer};
+use lexxor::{Lexxer, Lexxor};
 
 fn main() {
     // Create a string that resembles programming code

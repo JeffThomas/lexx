@@ -108,7 +108,7 @@ mod tests {
     use crate::matcher::symbol::SymbolMatcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::token::TOKEN_TYPE_SYMBOL;
-    use crate::{Lexxor, LexxError, Lexxer};
+    use crate::{LexxError, Lexxer, Lexxor};
 
     #[test]
     fn matcher_symbol_matches_single_symbol() {
