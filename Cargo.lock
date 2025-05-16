@@ -249,7 +249,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "lexx"
+name = "lexxor"
 version = "0.9.0"
 dependencies = [
  "arrayvec",

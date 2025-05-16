@@ -1,15 +1,15 @@
-use lexx::input::InputString;
-use lexx::matcher::exact::ExactMatcher;
-use lexx::matcher::float::FloatMatcher;
-use lexx::matcher::integer::IntegerMatcher;
-use lexx::matcher::symbol::SymbolMatcher;
-use lexx::matcher::whitespace::WhitespaceMatcher;
-use lexx::matcher::word::WordMatcher;
-use lexx::token::{
+use lexxor::input::InputString;
+use lexxor::matcher::exact::ExactMatcher;
+use lexxor::matcher::float::FloatMatcher;
+use lexxor::matcher::integer::IntegerMatcher;
+use lexxor::matcher::symbol::SymbolMatcher;
+use lexxor::matcher::whitespace::WhitespaceMatcher;
+use lexxor::matcher::word::WordMatcher;
+use lexxor::token::{
     TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_KEYWORD, TOKEN_TYPE_SYMBOL,
     TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD,
 };
-use lexx::{Lexx, Lexxer};
+use lexxor::{Lexxor, Lexxer};
 
 fn main() {
     // Create a string that resembles programming code
@@ -26,9 +26,9 @@ fn calculate(x: f32, y: f32) -> f32 {
 
     let input = InputString::new(code.to_string());
 
-    // Create a Lexx tokenizer specifically configured for code
+    // Create a Lexxor tokenizer specifically configured for code
     // Higher precedence for floats and keywords
-    let mut lexx = Lexx::<512>::new(
+    let mut lexxor = Lexxor::<512>::new(
         Box::new(input),
         vec![
             Box::new(WhitespaceMatcher {
@@ -81,7 +81,7 @@ fn calculate(x: f32, y: f32) -> f32 {
     println!("{}", "-".repeat(70));
 
     loop {
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(token)) => {
                 let type_name = match token.token_type {
                     TOKEN_TYPE_WORD => "WORD",

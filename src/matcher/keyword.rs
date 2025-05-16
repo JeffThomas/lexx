@@ -22,17 +22,17 @@ pub struct Target {
 /// # Example
 ///
 /// ```rust
-/// use lexx::{Lexx, Lexxer};
-/// use lexx::token::{TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_KEYWORD, TOKEN_TYPE_WORD};
-/// use lexx::input::InputString;
-/// use lexx::matcher::keyword::KeywordMatcher;
-/// use lexx::matcher::whitespace::WhitespaceMatcher;
-/// use lexx::matcher::word::WordMatcher;
+/// use lexxor::{Lexxor, Lexxer};
+/// use lexxor::token::{TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_KEYWORD, TOKEN_TYPE_WORD};
+/// use lexxor::input::InputString;
+/// use lexxor::matcher::keyword::KeywordMatcher;
+/// use lexxor::matcher::whitespace::WhitespaceMatcher;
+/// use lexxor::matcher::word::WordMatcher;
 ///
-/// let lexx_input = InputString::new(String::from("matcher matching match dog"));
+/// let lexxor_input = InputString::new(String::from("matcher matching match dog"));
 ///
-/// let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
-///     Box::new(lexx_input),
+/// let mut lexxor: Box<dyn Lexxer> = Box::new(Lexxor::<512>::new(
+///     Box::new(lexxor_input),
 ///     vec![
 ///         Box::new(WordMatcher { index: 0, precedence: 0, running: true }),
 ///         Box::new(WhitespaceMatcher { index: 0, column: 0,line: 0,precedence: 0, running: true}),
@@ -44,14 +44,14 @@ pub struct Target {
 ///
 /// // Because of the precedence settings the ExactMatcher matched "^"
 /// // even though the SymbolMtcher would have matched "^%$"
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "matcher" && t.token_type == TOKEN_TYPE_WORD && t.line == 1 && t.column == 1));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "matching" && t.token_type == TOKEN_TYPE_WORD && t.line == 1 && t.column == 9));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "match" && t.token_type == TOKEN_TYPE_KEYWORD && t.line == 1 && t.column == 18));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "dog" && t.token_type == TOKEN_TYPE_KEYWORD && t.line == 1 && t.column == 24));
-/// assert!(matches!(lexx.next_token(), Ok(None)));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "matcher" && t.token_type == TOKEN_TYPE_WORD && t.line == 1 && t.column == 1));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "matching" && t.token_type == TOKEN_TYPE_WORD && t.line == 1 && t.column == 9));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "match" && t.token_type == TOKEN_TYPE_KEYWORD && t.line == 1 && t.column == 18));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "dog" && t.token_type == TOKEN_TYPE_KEYWORD && t.line == 1 && t.column == 24));
+/// assert!(matches!(lexxor.next_token(), Ok(None)));
 /// ```
 #[derive(Clone, Debug)]
 pub struct KeywordMatcher {
@@ -218,11 +218,11 @@ mod tests {
     use crate::matcher::keyword::KeywordMatcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::token::TOKEN_TYPE_KEYWORD;
-    use crate::{Lexx, LexxError, Lexxer};
+    use crate::{Lexxor, LexxError, Lexxer};
 
     #[test]
     fn matcher_exact_matches_word() {
-        let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
+        let mut lexxor: Box<dyn Lexxer> = Box::new(Lexxor::<512>::new(
             Box::new(InputString::new(String::from("The"))),
             vec![Box::new(KeywordMatcher::build_matcher_keyword(
                 vec!["The"],
@@ -231,7 +231,7 @@ mod tests {
             ))],
         ));
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -254,7 +254,7 @@ mod tests {
     fn matcher_exact_matches_multiple_words() {
         use crate::token::TOKEN_TYPE_WHITESPACE;
 
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("The quick brown fox qquick"))),
             vec![
                 Box::new(KeywordMatcher::build_matcher_keyword(
@@ -272,7 +272,7 @@ mod tests {
             ],
         );
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -289,9 +289,9 @@ mod tests {
             }
         }
 
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -308,9 +308,9 @@ mod tests {
             }
         }
 
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -327,9 +327,9 @@ mod tests {
             }
         }
 
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -346,9 +346,9 @@ mod tests {
             }
         }
 
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -372,7 +372,7 @@ mod tests {
     fn matcher_exact_matches_multiple_words_and_lines() {
         use crate::token::TOKEN_TYPE_WHITESPACE;
 
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from(
                 "The quick\rbrown\nfox jumped\rover the lazy dog",
             ))),
@@ -394,23 +394,23 @@ mod tests {
             ],
         );
 
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "The"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "quick"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "brown"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "fox"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "jumped"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "over"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "the"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "lazy"));
-        assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
-        match lexx.next_token() {
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "The"));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "quick"));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "brown"));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "fox"));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "jumped"));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "over"));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "the"));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "lazy"));
+        assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE));
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -432,7 +432,7 @@ mod tests {
 
     #[test]
     fn matcher_exact_does_not_match_partial_word() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("Then"))),
             vec![Box::new(KeywordMatcher::build_matcher_keyword(
                 vec!["The"],
@@ -441,7 +441,7 @@ mod tests {
             ))],
         );
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(e) => {
                     assert_eq!(e, "Could not resolve token at 1, 1: 'Some('n')'.");

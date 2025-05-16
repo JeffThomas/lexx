@@ -12,16 +12,16 @@ use std::collections::HashMap;
 /// # Example
 ///
 /// ```rust
-/// use lexx::{Lexx, Lexxer};
-/// use lexx::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
-/// use lexx::input::InputString;
-/// use lexx::matcher::exact::ExactMatcher;
-/// use lexx::matcher::symbol::SymbolMatcher;
+/// use lexxor::{Lexxor, Lexxer};
+/// use lexxor::token::{TOKEN_TYPE_EXACT, TOKEN_TYPE_SYMBOL};
+/// use lexxor::input::InputString;
+/// use lexxor::matcher::exact::ExactMatcher;
+/// use lexxor::matcher::symbol::SymbolMatcher;
 ///
-/// let lexx_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
+/// let lexxor_input = InputString::new(String::from("^%$gxv llj)9^%d$rrr"));
 ///
-/// let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
-///     Box::new(lexx_input),
+/// let mut lexxor: Box<dyn Lexxer> = Box::new(Lexxor::<512>::new(
+///     Box::new(lexxor_input),
 ///     vec![
 ///         Box::new(SymbolMatcher { index: 0, precedence: 0, running: true }),
 ///         // Note the precedence of 1 will cause the ExactMatcher to be be returned
@@ -32,17 +32,17 @@ use std::collections::HashMap;
 ///
 /// // Because of the precedence settings the ExactMatcher matched "^"
 /// // even though the SymbolMtcher would have matched "^%$"
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "^" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 1));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "%$" && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 2));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "^" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 1));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "%$" && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 2));
 /// // NOTE that "$gxv " is NOT found because the symbol matcher matched "%$"
 /// // the ExactMatcher gave up at '%' and never saw '$gxv '
 /// // matchers can not find matches that start inside the valid matches of other matchers.
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "gxv " && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 4));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "llj)9" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 8));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "^" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 13));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "%" && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 14));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "d$rrr" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 15));
-/// assert!(matches!(lexx.next_token(), Ok(None)));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "gxv " && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 4));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "llj)9" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 8));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "^" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 13));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "%" && t.token_type == TOKEN_TYPE_SYMBOL && t.line == 1 && t.column == 14));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "d$rrr" && t.token_type == TOKEN_TYPE_EXACT && t.line == 1 && t.column == 15));
+/// assert!(matches!(lexxor.next_token(), Ok(None)));
 /// ```
 #[derive(Clone, Debug, Copy)]
 pub struct SymbolMatcher {
@@ -108,11 +108,11 @@ mod tests {
     use crate::matcher::symbol::SymbolMatcher;
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::token::TOKEN_TYPE_SYMBOL;
-    use crate::{Lexx, LexxError, Lexxer};
+    use crate::{Lexxor, LexxError, Lexxer};
 
     #[test]
     fn matcher_symbol_matches_single_symbol() {
-        let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
+        let mut lexxor: Box<dyn Lexxer> = Box::new(Lexxor::<512>::new(
             Box::new(InputString::new(String::from("@"))),
             vec![Box::new(SymbolMatcher {
                 index: 0,
@@ -121,7 +121,7 @@ mod tests {
             })],
         ));
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -142,7 +142,7 @@ mod tests {
 
     #[test]
     fn matcher_symbol_matches_multiple_symbols() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("!@#$%^&*"))),
             vec![Box::new(SymbolMatcher {
                 index: 0,
@@ -151,7 +151,7 @@ mod tests {
             })],
         );
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(e) => match e {
                 LexxError::TokenNotFound(_) => {
                     unreachable!("Should not have failed parsing file");
@@ -172,7 +172,7 @@ mod tests {
 
     #[test]
     fn matcher_symbol_stops_at_alphanumeric() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("@#$abc"))),
             vec![Box::new(SymbolMatcher {
                 index: 0,
@@ -181,7 +181,7 @@ mod tests {
             })],
         );
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(t)) => {
                 assert_eq!(t.value, "@#$");
                 assert_eq!(t.token_type, TOKEN_TYPE_SYMBOL);
@@ -194,7 +194,7 @@ mod tests {
 
     #[test]
     fn matcher_symbol_stops_at_whitespace() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("@#$ %^&"))),
             vec![
                 Box::new(SymbolMatcher {
@@ -213,7 +213,7 @@ mod tests {
         );
 
         // First symbol group
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(t)) => {
                 assert_eq!(t.value, "@#$");
                 assert_eq!(t.token_type, TOKEN_TYPE_SYMBOL);
@@ -225,11 +225,11 @@ mod tests {
 
         // Whitespace
         assert!(
-            matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == crate::token::TOKEN_TYPE_WHITESPACE)
+            matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == crate::token::TOKEN_TYPE_WHITESPACE)
         );
 
         // Second symbol group
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(t)) => {
                 assert_eq!(t.value, "%^&");
                 assert_eq!(t.token_type, TOKEN_TYPE_SYMBOL);
@@ -242,7 +242,7 @@ mod tests {
 
     #[test]
     fn matcher_symbol_handles_empty_input() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from(""))),
             vec![Box::new(SymbolMatcher {
                 index: 0,
@@ -252,12 +252,12 @@ mod tests {
         );
 
         // Should return None for empty input
-        assert!(matches!(lexx.next_token(), Ok(None)));
+        assert!(matches!(lexxor.next_token(), Ok(None)));
     }
 
     #[test]
     fn matcher_symbol_handles_non_symbol_input() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("abc123"))),
             vec![Box::new(SymbolMatcher {
                 index: 0,
@@ -267,7 +267,7 @@ mod tests {
         );
 
         // Should fail to match anything
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Err(LexxError::TokenNotFound(_)) => {
                 // This is expected
             }
@@ -294,7 +294,7 @@ mod tests {
 
     #[test]
     fn matcher_symbol_returns_correct_token_type() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("+-*/"))),
             vec![Box::new(SymbolMatcher {
                 index: 0,
@@ -303,7 +303,7 @@ mod tests {
             })],
         );
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(t)) => {
                 assert_eq!(t.value, "+-*/");
                 assert_eq!(t.token_type, TOKEN_TYPE_SYMBOL);
@@ -318,7 +318,7 @@ mod tests {
     #[test]
     fn matcher_symbol_respects_precedence() {
         let custom_precedence = 5;
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("++"))),
             vec![Box::new(SymbolMatcher {
                 index: 0,
@@ -327,7 +327,7 @@ mod tests {
             })],
         );
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(t)) => {
                 assert_eq!(t.precedence, custom_precedence);
             }
@@ -339,7 +339,7 @@ mod tests {
 
     #[test]
     fn matcher_symbol_handles_unicode_symbols() {
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("§¶†‡"))),
             vec![Box::new(SymbolMatcher {
                 index: 0,
@@ -348,7 +348,7 @@ mod tests {
             })],
         );
 
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(t)) => {
                 assert_eq!(t.value, "§¶†‡");
                 assert_eq!(t.token_type, TOKEN_TYPE_SYMBOL);

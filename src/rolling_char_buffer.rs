@@ -17,7 +17,7 @@
 //!
 //! ## Example Usage
 //! ```rust
-//! use lexx::rolling_char_buffer::{RollingCharBuffer, RollingCharBufferError};
+//! use lexxor::rolling_char_buffer::{RollingCharBuffer, RollingCharBufferError};
 //! let mut buffer = RollingCharBuffer::<8>::new();
 //! buffer.push('x').unwrap();
 //! buffer.prefix('y').unwrap();
@@ -62,7 +62,7 @@ impl fmt::Display for RollingCharBufferError {
 /// # Example
 ///
 /// ```rust
-/// use lexx::rolling_char_buffer::{RollingCharBuffer, RollingCharBufferError};
+/// use lexxor::rolling_char_buffer::{RollingCharBuffer, RollingCharBufferError};
 /// let mut buffer = RollingCharBuffer::<5>::new();
 ///
 /// assert_eq!(buffer.push('a'), Ok(())); // buffer is now ['a']
@@ -121,7 +121,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// Creates a new [RollingCharBuffer]
     ///
     /// ```rust
-    /// use lexx::rolling_char_buffer::RollingCharBuffer;
+    /// use lexxor::rolling_char_buffer::RollingCharBuffer;
     /// // create a new [RollingCharBuffer] with a maximum buffer size of 5 [char]s
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// ```
@@ -140,7 +140,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// # Examples
     ///
     /// ```rust
-    /// use lexx::rolling_char_buffer::RollingCharBuffer;
+    /// use lexxor::rolling_char_buffer::RollingCharBuffer;
     ///
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// assert_eq!(buffer.len(), 0);
@@ -167,7 +167,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// # Examples
     ///
     /// ```rust
-    /// use lexx::rolling_char_buffer::RollingCharBuffer;
+    /// use lexxor::rolling_char_buffer::RollingCharBuffer;
     ///
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// assert_eq!(buffer.is_empty(), true);
@@ -185,7 +185,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// # Examples
     ///
     /// ```rust
-    /// use lexx::rolling_char_buffer::RollingCharBuffer;
+    /// use lexxor::rolling_char_buffer::RollingCharBuffer;
     ///
     /// let mut buffer = RollingCharBuffer::<2>::new();
     /// assert_eq!(buffer.is_full(), false);
@@ -206,7 +206,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     ///
     /// ```rust
     ///
-    /// use lexx::rolling_char_buffer::RollingCharBuffer;
+    /// use lexxor::rolling_char_buffer::RollingCharBuffer;
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// assert_eq!(buffer.push('a'), Ok(())); // buffer is now ['a']
     /// assert_eq!(buffer.push('b'), Ok(())); // buffer is now ['a', 'b']
@@ -225,7 +225,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// # Examples
     ///
     /// ```rust
-    /// use lexx::rolling_char_buffer::RollingCharBuffer;
+    /// use lexxor::rolling_char_buffer::RollingCharBuffer;
     ///
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// assert_eq!(buffer.push('a'), Ok(())); // buffer is now ['a']
@@ -249,7 +249,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// # Examples
     ///
     /// ```rust
-    /// use lexx::rolling_char_buffer::RollingCharBuffer;
+    /// use lexxor::rolling_char_buffer::RollingCharBuffer;
     ///
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// assert_eq!(buffer.push('a'), Ok(())); // buffer is now ['a']
@@ -274,7 +274,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// # Examples
     ///
     /// ```rust
-    /// use lexx::rolling_char_buffer::RollingCharBuffer;
+    /// use lexxor::rolling_char_buffer::RollingCharBuffer;
     ///
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// assert_eq!(buffer.push('a'), Ok(())); // buffer is now ['a']
@@ -302,7 +302,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// # Examples
     ///
     /// ```rust
-    /// use lexx::rolling_char_buffer::RollingCharBuffer;
+    /// use lexxor::rolling_char_buffer::RollingCharBuffer;
     ///
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// assert_eq!(buffer.prefix('a'), Ok(())); // buffer is now ['a']
@@ -334,7 +334,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// # Examples
     ///
     /// ```rust
-    /// use lexx::rolling_char_buffer::RollingCharBuffer;
+    /// use lexxor::rolling_char_buffer::RollingCharBuffer;
     ///
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// assert_eq!(buffer.push('a'), Ok(())); // buffer is now ['a']
@@ -363,7 +363,7 @@ impl<const CAP: usize> RollingCharBuffer<CAP> {
     /// # Examples
     ///
     /// ```rust
-    /// use lexx::rolling_char_buffer::RollingCharBuffer;
+    /// use lexxor::rolling_char_buffer::RollingCharBuffer;
     ///
     /// let mut buffer = RollingCharBuffer::<5>::new();
     /// assert_eq!(buffer.push('a'), Ok(())); // buffer is now ['a']

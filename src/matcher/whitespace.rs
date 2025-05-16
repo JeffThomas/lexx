@@ -12,29 +12,29 @@ use std::collections::HashMap;
 /// # Example
 ///
 /// ```rust
-/// use lexx::{Lexx, Lexxer};
-/// use lexx::token::{TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD};
-/// use lexx::input::InputString;
-/// use lexx::matcher::whitespace::WhitespaceMatcher;
-/// use lexx::matcher::word::WordMatcher;
+/// use lexxor::{Lexxor, Lexxer};
+/// use lexxor::token::{TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD};
+/// use lexxor::input::InputString;
+/// use lexxor::matcher::whitespace::WhitespaceMatcher;
+/// use lexxor::matcher::word::WordMatcher;
 ///
-/// let lexx_input = InputString::new(String::from(" a \t\nb \r\n\t c"));
+/// let lexxor_input = InputString::new(String::from(" a \t\nb \r\n\t c"));
 ///
-/// let mut lexx: Box<dyn Lexxer> = Box::new(Lexx::<512>::new(
-///     Box::new(lexx_input),
+/// let mut lexxor: Box<dyn Lexxer> = Box::new(Lexxor::<512>::new(
+///     Box::new(lexxor_input),
 ///     vec![
 ///         Box::new(WhitespaceMatcher { index: 0, column: 0,line: 0,precedence: 0, running: true}),
 ///         Box::new(WordMatcher { index: 0, precedence: 0, running: true }),
 ///     ]
 /// ));
 ///
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE && t.line == 1 && t.column == 1));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "a" && t.token_type == TOKEN_TYPE_WORD && t.line == 1 && t.column == 2));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE && t.line == 1 && t.column == 3));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "b" && t.token_type == TOKEN_TYPE_WORD && t.line == 2 && t.column == 1));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE && t.line == 2 && t.column == 2));
-/// assert!(matches!(lexx.next_token(), Ok(Some(t)) if t.value == "c" && t.token_type == TOKEN_TYPE_WORD && t.line == 3 && t.column == 3));
-/// assert!(matches!(lexx.next_token(), Ok(None)));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE && t.line == 1 && t.column == 1));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "a" && t.token_type == TOKEN_TYPE_WORD && t.line == 1 && t.column == 2));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE && t.line == 1 && t.column == 3));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "b" && t.token_type == TOKEN_TYPE_WORD && t.line == 2 && t.column == 1));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.token_type == TOKEN_TYPE_WHITESPACE && t.line == 2 && t.column == 2));
+/// assert!(matches!(lexxor.next_token(), Ok(Some(t)) if t.value == "c" && t.token_type == TOKEN_TYPE_WORD && t.line == 3 && t.column == 3));
+/// assert!(matches!(lexxor.next_token(), Ok(None)));
 /// ```
 #[derive(Clone, Debug, Copy)]
 pub struct WhitespaceMatcher {
@@ -116,13 +116,13 @@ mod tests {
     use crate::matcher::whitespace::WhitespaceMatcher;
     use crate::matcher::word::WordMatcher;
     use crate::token::TOKEN_TYPE_WHITESPACE;
-    use crate::{Lexx, Lexxer};
+    use crate::{Lexxor, Lexxer};
     use std::collections::HashMap;
 
     #[test]
     fn test_basic_whitespace_matching() {
         // Test basic whitespace matching with spaces
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("   "))),
             vec![Box::new(WhitespaceMatcher {
                 index: 0,
@@ -134,18 +134,18 @@ mod tests {
         );
 
         // Should match all three spaces as a single token
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, "   ");
 
         // No more tokens
-        assert!(matches!(lexx.next_token(), Ok(None)));
+        assert!(matches!(lexxor.next_token(), Ok(None)));
     }
 
     #[test]
     fn test_mixed_whitespace_types() {
         // Test matching of different whitespace characters
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from(" \t\r\n "))),
             vec![Box::new(WhitespaceMatcher {
                 index: 0,
@@ -157,18 +157,18 @@ mod tests {
         );
 
         // Should match all whitespace characters as a single token
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, " \t\r\n ");
 
         // No more tokens
-        assert!(matches!(lexx.next_token(), Ok(None)));
+        assert!(matches!(lexxor.next_token(), Ok(None)));
     }
 
     #[test]
     fn test_line_counting() {
         // Test that line counting works correctly with different newline styles
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("a\nb\r\nc\rd"))),
             vec![
                 Box::new(WordMatcher {
@@ -187,40 +187,40 @@ mod tests {
         );
 
         // First word - 'a'
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.value, "a");
         assert_eq!(token.line, 1);
         assert_eq!(token.column, 1);
 
         // Newline (\n)
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, "\n");
 
         // Second word - 'b'
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.value, "b");
         assert_eq!(token.line, 2);
         assert_eq!(token.column, 1);
 
         // Carriage return + newline (\r\n)
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, "\r\n");
 
         // Third word - 'c'
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.value, "c");
         assert_eq!(token.line, 3);
         assert_eq!(token.column, 1);
 
         // Carriage return only (\r)
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, "\r");
 
         // Fourth word - 'd'
-        // let token = lexx.next_token().unwrap().unwrap();
+        // let token = lexxor.next_token().unwrap().unwrap();
         // assert_eq!(token.value, "d");
         // assert_eq!(token.line, 3);
         // assert_eq!(token.column, 1);
@@ -229,7 +229,7 @@ mod tests {
     #[test]
     fn test_whitespace_with_non_whitespace() {
         // Test that whitespace matcher stops at non-whitespace characters
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("  abc  "))),
             vec![
                 Box::new(WhitespaceMatcher {
@@ -248,16 +248,16 @@ mod tests {
         );
 
         // First whitespace token
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, "  ");
 
         // Word token
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.value, "abc");
 
         // Second whitespace token
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, "  ");
     }
@@ -269,7 +269,7 @@ mod tests {
         // \u{00A0} (non-breaking space)
         // \u{2000}-\u{200A} (various width spaces)
         // \u{3000} (ideographic space)
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from(" \u{00A0}\u{2002}\u{3000} "))),
             vec![Box::new(WhitespaceMatcher {
                 index: 0,
@@ -281,7 +281,7 @@ mod tests {
         );
 
         // Should match all Unicode whitespace characters as a single token
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, " \u{00A0}\u{2002}\u{3000} ");
     }
@@ -289,7 +289,7 @@ mod tests {
     #[test]
     fn test_empty_input() {
         // Test behavior with empty input
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from(""))),
             vec![Box::new(WhitespaceMatcher {
                 index: 0,
@@ -301,7 +301,7 @@ mod tests {
         );
 
         // Should return None for empty input
-        assert!(matches!(lexx.next_token(), Ok(None)));
+        assert!(matches!(lexxor.next_token(), Ok(None)));
     }
 
     #[test]
@@ -329,7 +329,7 @@ mod tests {
     #[test]
     fn test_whitespace_at_end_of_input() {
         // Test that whitespace at the end of input is properly matched
-        let mut lexx = Lexx::<512>::new(
+        let mut lexxor = Lexxor::<512>::new(
             Box::new(InputString::new(String::from("abc   "))),
             vec![
                 Box::new(WordMatcher {
@@ -348,16 +348,16 @@ mod tests {
         );
 
         // Word token
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.value, "abc");
 
         // Whitespace token at end of input
-        let token = lexx.next_token().unwrap().unwrap();
+        let token = lexxor.next_token().unwrap().unwrap();
         assert_eq!(token.token_type, TOKEN_TYPE_WHITESPACE);
         assert_eq!(token.value, "   ");
 
         // No more tokens
-        assert!(matches!(lexx.next_token(), Ok(None)));
+        assert!(matches!(lexxor.next_token(), Ok(None)));
     }
 
     #[test]

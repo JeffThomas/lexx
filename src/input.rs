@@ -1,10 +1,10 @@
 // =============================
-// Lexx Input Abstractions
+// Lexxor Input Abstractions
 // =============================
 //
-// This module provides input sources for the Lexx lexer, supporting both in-memory strings and buffered streaming input (e.g., files).
+// This module provides input sources for the Lexxor lexer, supporting both in-memory strings and buffered streaming input (e.g., files).
 //
-// The core abstraction is the `LexxInput` trait, which yields one character at a time as `Result<Option<char>, LexxInputError>`, allowing for end-of-input and error reporting.
+// The core abstraction is the `LexxorInput` trait, which yields one character at a time as `Result<Option<char>, LexxorInputError>`, allowing for end-of-input and error reporting.
 //
 // - `InputString`: Efficient, fixed-size buffer for string input.
 // - `InputReader`: Buffered, streaming input from any type implementing `Read`, with UTF-8 and buffer boundary handling.
@@ -25,45 +25,45 @@ pub const BUFFER_SIZE: usize = 1024;
 /// Error type for input sources used by Lexx.
 /// Used to signal I/O or decoding errors during input processing.
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum LexxInputError {
+pub enum LexxorInputError {
     /// An error occurred in the input source or during decoding.
     Error(String),
 }
 
-impl fmt::Display for LexxInputError {
+impl fmt::Display for LexxorInputError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            LexxInputError::Error(ref s) => {
+            LexxorInputError::Error(ref s) => {
                 write!(f, "an error occurred: {:?}", s)
             }
         }
     }
 }
 
-impl Error for LexxInputError {
+impl Error for LexxorInputError {
     #[allow(deprecated)]
     fn description(&self) -> &str {
         match *self {
-            LexxInputError::Error(..) => "an error occurred",
+            LexxorInputError::Error(..) => "an error occurred",
         }
     }
 }
 
-impl From<LexxInputError> for LexxError {
-    fn from(lie: LexxInputError) -> LexxError {
+impl From<LexxorInputError> for LexxError {
+    fn from(lie: LexxorInputError) -> LexxError {
         match lie {
-            LexxInputError::Error(e) => LexxError::Error(e),
+            LexxorInputError::Error(e) => LexxError::Error(e),
         }
     }
 }
 
-/// Trait for providing character input to the Lexx lexer.
+/// Trait for providing character input to the Lexxorlexer.
 ///
 /// Implementors yield one character at a time, or an error, until end-of-input.
 ///
 /// # Example
 /// ```rust
-/// use lexx::input::{LexxInput, InputString};
+/// use lexxor::input::{LexxorInput, InputString};
 /// let mut input = InputString::new("The\n".to_string());
 /// assert!(matches!(input.next(), Ok(Some('T'))));
 /// assert!(matches!(input.next(), Ok(Some('h'))));
@@ -71,9 +71,9 @@ impl From<LexxInputError> for LexxError {
 /// assert!(matches!(input.next(), Ok(Some('\n'))));
 /// assert!(matches!(input.next(), Ok(None)));
 /// ```
-pub trait LexxInput: Debug {
+pub trait LexxorInput: Debug {
     /// Returns the next character, or `Ok(None)` at EOF, or an error.
-    fn next(&mut self) -> Result<Option<char>, LexxInputError>;
+    fn next(&mut self) -> Result<Option<char>, LexxorInputError>;
 }
 
 /// In-memory input source for Lexx, using a fixed-size buffer of chars.
@@ -82,7 +82,7 @@ pub trait LexxInput: Debug {
 ///
 /// # Example
 /// ```rust
-/// use lexx::input::{InputString, LexxInput};
+/// use lexxor::input::{InputString, LexxorInput};
 /// let mut input = InputString::new("abc".to_string());
 /// assert_eq!(input.next().unwrap(), Some('a'));
 /// assert_eq!(input.next().unwrap(), Some('b'));
@@ -124,9 +124,9 @@ impl InputString {
     }
 }
 
-impl LexxInput for InputString {
+impl LexxorInput for InputString {
     /// Returns each character in the string one at a time until EOF, then returns `Ok(None)`.
-    fn next(&mut self) -> Result<Option<char>, LexxInputError> {
+    fn next(&mut self) -> Result<Option<char>, LexxorInputError> {
         if self.index < self.size {
             let c = self.chars[self.index];
             self.index += 1;
@@ -144,7 +144,7 @@ impl LexxInput for InputString {
 /// # Example
 /// ```rust
 /// use std::io::Cursor;
-/// use lexx::input::{InputReader, LexxInput};
+/// use lexxor::input::{InputReader, LexxorInput};
 /// let data = b"xyz";
 /// let mut reader = InputReader::new(Cursor::new(&data[..]));
 /// assert_eq!(reader.next().unwrap(), Some('x'));
@@ -195,13 +195,13 @@ where
     }
 }
 
-impl<R> LexxInput for InputReader<R>
+impl<R> LexxorInput for InputReader<R>
 where
     R: Read + Debug,
 {
     /// Returns the next character from the stream, handling buffer refills and UTF-8 boundaries.
     /// Returns `Ok(None)` at EOF.
-    fn next(&mut self) -> Result<Option<char>, LexxInputError> {
+    fn next(&mut self) -> Result<Option<char>, LexxorInputError> {
         if self.index < self.size {
             let c = self.text[self.index];
             self.index += 1;
@@ -251,7 +251,7 @@ where
 }
 
 // =============================
-// End of Lexx Input Abstractions
+// End of LexxorInput Abstractions
 // =============================
 
 #[cfg(test)]
@@ -270,10 +270,10 @@ mod tests {
         TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE,
         TOKEN_TYPE_WORD, Token,
     };
-    use crate::{Lexx, LexxError, Lexxer};
+    use crate::{Lexxor, LexxError, Lexxer};
 
     #[test]
-    fn lexx_parse_large_file() {
+    fn lexxor_parse_large_file() {
         let mut integers = 0;
         let mut floats = 0;
         let mut whitespace = 0;
@@ -289,10 +289,10 @@ mod tests {
 
         let input_file = InputReader::new(file);
 
-        let mut lexx = make_test_lexx(input_file);
+        let mut lexxor = make_test_lexxor(input_file);
 
         loop {
-            match lexx.next_token() {
+            match lexxor.next_token() {
                 Ok(Some(token)) => {
                     total += 1;
                     lines = token.line;
@@ -345,12 +345,12 @@ mod tests {
     }
 
     #[test]
-    fn lexx_parse_utf_file() {
+    fn lexxor_parse_utf_file() {
         let file = File::open("./test_data/utf-8-sampler.txt").unwrap();
 
         let input_file = InputReader::new(file);
 
-        let lexx = make_test_lexx(input_file);
+        let lexxor = make_test_lexxor(input_file);
 
         let mut final_token: Token = Token {
             value: "".to_string(),
@@ -361,7 +361,7 @@ mod tests {
             precedence: 0,
         };
 
-        for token in lexx {
+        for token in lexxor {
             if token.token_type != TOKEN_TYPE_WHITESPACE {
                 final_token = token;
             }
@@ -373,8 +373,8 @@ mod tests {
         assert_eq!(String::from("▁▂▃▄▅▆▇█"), final_token.value);
     }
 
-    fn make_test_lexx(input_file: InputReader<File>) -> Box<Lexx<512>> {
-        Box::new(Lexx::<512>::new(
+    fn make_test_lexxor(input_file: InputReader<File>) -> Box<Lexxor<512>> {
+        Box::new(Lexxor::<512>::new(
             Box::new(input_file),
             vec![
                 Box::new(IntegerMatcher {

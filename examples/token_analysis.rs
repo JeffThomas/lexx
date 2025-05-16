@@ -1,13 +1,13 @@
-use lexx::input::InputString;
-use lexx::matcher::float::FloatMatcher;
-use lexx::matcher::integer::IntegerMatcher;
-use lexx::matcher::symbol::SymbolMatcher;
-use lexx::matcher::whitespace::WhitespaceMatcher;
-use lexx::matcher::word::WordMatcher;
-use lexx::token::{
+use lexxor::input::InputString;
+use lexxor::matcher::float::FloatMatcher;
+use lexxor::matcher::integer::IntegerMatcher;
+use lexxor::matcher::symbol::SymbolMatcher;
+use lexxor::matcher::whitespace::WhitespaceMatcher;
+use lexxor::matcher::word::WordMatcher;
+use lexxor::token::{
     TOKEN_TYPE_FLOAT, TOKEN_TYPE_INTEGER, TOKEN_TYPE_SYMBOL, TOKEN_TYPE_WHITESPACE, TOKEN_TYPE_WORD,
 };
-use lexx::{Lexx, Lexxer};
+use lexxor::{Lexxor, Lexxer};
 use std::collections::HashMap;
 
 fn main() {
@@ -16,8 +16,8 @@ fn main() {
         "The quick brown fox jumps over the lazy dog. It was 5.8 meters high and took 2 seconds.";
     let input = InputString::new(text.to_string());
 
-    // Create a Lexx tokenizer with standard matchers
-    let mut lexx = Lexx::<512>::new(
+    // Create a Lexxor tokenizer with standard matchers
+    let mut lexxor = Lexxor::<512>::new(
         Box::new(input),
         vec![
             Box::new(WhitespaceMatcher {
@@ -56,7 +56,7 @@ fn main() {
     let mut tokens = Vec::new();
 
     loop {
-        match lexx.next_token() {
+        match lexxor.next_token() {
             Ok(Some(token)) => tokens.push(token),
             Ok(None) => break,
             Err(e) => {

@@ -1,4 +1,4 @@
-//! The matcher module provides a set of token matchers for the Lexx lexer.
+//! The matcher module provides a set of token matchers for the Lexxor lexer.
 //!
 //! Each matcher implements the [Matcher] trait and is responsible for recognizing
 //! specific types of tokens in a character stream. The available matchers are:
@@ -14,12 +14,12 @@
 //! Each matcher can be used independently or in combination to build a custom lexer.
 
 ///
-/// Trait for token matchers used by [`Lexx`](crate::Lexx).
+/// Trait for token matchers used by [`Lexxor`](crate::Lexxor).
 ///
 /// # Overview
 ///
 /// A `Matcher` is responsible for recognizing a particular kind of token in a character stream. Each matcher
-/// maintains its own state and is reset before each new tokenization attempt. Lexx will call `find_match` repeatedly,
+/// maintains its own state and is reset before each new tokenization attempt. Lexxor will call `find_match` repeatedly,
 /// feeding one character at a time to each matcher, until one returns a successful match or all fail.
 ///
 /// Matchers can be used for words, numbers, symbols, keywords, whitespace, or any custom pattern. They can share
@@ -29,8 +29,8 @@
 ///
 /// ```rust
 /// use std::collections::HashMap;
-/// use lexx::matcher::{Matcher, MatcherResult};
-/// use lexx::token::{Token, TOKEN_TYPE_WORD};
+/// use lexxor::matcher::{Matcher, MatcherResult};
+/// use lexxor::token::{Token, TOKEN_TYPE_WORD};
 ///
 /// #[derive(Debug)]
 /// struct SimpleWordMatcher { index: usize, running: bool }
