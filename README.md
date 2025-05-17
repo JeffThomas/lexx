@@ -1,4 +1,4 @@
-# Lexx
+# Lexxor
 
 A fast, extensible, greedy, single-pass text tokenizer implemented in Rust. Lexxor is designed for high-performance tokenization with minimal memory allocations, making it suitable for parsing large files or real-time text processing.
 
@@ -45,21 +45,21 @@ Matchers can be assigned precedence values to resolve conflicts when multiple ma
 ### Basic Tokenization
 
 ```rust
-use Lexxor::Lexx;
-use Lexxor::input::InputString;
-use Lexxor::matcher::word::WordMatcher;
-use Lexxor::matcher::whitespace::WhitespaceMatcher;
-use Lexxor::matcher::symbol::SymbolMatcher;
-use Lexxor::matcher::integer::IntegerMatcher;
-use Lexxor::matcher::float::FloatMatcher;
+use lexxor::Lexxor;
+use lexxor::input::InputString;
+use lexxor::matcher::word::WordMatcher;
+use lexxor::matcher::whitespace::WhitespaceMatcher;
+use lexxor::matcher::symbol::SymbolMatcher;
+use lexxor::matcher::integer::IntegerMatcher;
+use lexxor::matcher::float::FloatMatcher;
 
 fn main() {
     // Create a simple input string
     let input_text = "Hello world! This is 42 and 3.14159.";
     let input = InputString::new(input_text.to_string());
-    
+
     // Create a Lexxor tokenizer with standard matchers
-    let lexx = Lexx::<512>::new(
+    let lexx = Lexxor::<512>::new(
         Box::new(input),
         vec![
             Box::new(WhitespaceMatcher { index: 0, column: 0, line: 0, precedence: 0, running: true }),
@@ -69,7 +69,7 @@ fn main() {
             Box::new(SymbolMatcher { index: 0, precedence: 0, running: true }),
         ]
     );
-    
+
     // Process tokens using the Iterator interface
     for token in lexx {
         println!("{}", token);
@@ -82,8 +82,8 @@ fn main() {
 You can create custom matchers by implementing the `Matcher` trait:
 
 ```rust
-use Lexxor::matcher::{Matcher, MatcherResult};
-use Lexxor::token::{Token, TOKEN_TYPE_CUSTOM};
+use lexxor::matcher::{Matcher, MatcherResult};
+use lexxor::token::{Token, TOKEN_TYPE_CUSTOM};
 use std::collections::HashMap;
 use std::fmt::Debug;
 
