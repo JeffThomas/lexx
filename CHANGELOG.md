@@ -8,13 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- None
+- Comprehensive test suite for `rewind()` functionality in `tests/lexer_rewind.rs`
 
 ### Changed
 - Updated github pipelines
 
 ### Fixed
-- None
+- Fixed `rewind()` function to properly handle lookahead state
+  - Now clears `lexxor_result` to prevent stale lookahead tokens from being returned
+  - Preserves lookahead token in cache when rewinding to maintain correct token order
+  - Fixes issue where rewinding after `look_ahead()` would return incorrect tokens or concatenated tokens
+  - Enables proper support for parser backtracking patterns (consume → look ahead → rewind → re-tokenize)
 
 ## [0.9.0] - 2025-05-14
 
