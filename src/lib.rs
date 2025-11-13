@@ -304,10 +304,10 @@ impl<const CAP: usize> Lexxor<CAP> {
             }
             if !running {
                 if let Some(mut token) = self.found_token.take() {
-                    if self.value.len() > token.len {
-                        if let Err(e) = self.cache.prepend(&self.value[token.len..]) {
-                            panic!("Ran out of buffer space: {}", e)
-                        }
+                    if self.value.len() > token.len
+                        && let Err(e) = self.cache.prepend(&self.value[token.len..])
+                    {
+                        panic!("Ran out of buffer space: {}", e)
                     }
                     let l = self.line;
                     let c = self.column;
@@ -427,16 +427,17 @@ impl<const CAP: usize> Lexxer for Lexxor<CAP> {
     fn rewind(&mut self, token: Token) -> Result<usize, RollingCharBufferError> {
         self.line = token.line;
         self.column = token.column;
-        
+
         // If there was a lookahead, we need to preserve it by putting it in the cache
         // after the rewound token, since the lookahead came after this token
         if let Some(Ok(Some(ref lookahead_token))) = self.lexxor_result {
             // First prepend the lookahead token to cache (it goes after the rewound token)
-            self.cache.prepend(&lookahead_token.value.chars().collect::<Vec<char>>())?;
+            self.cache
+                .prepend(&lookahead_token.value.chars().collect::<Vec<char>>())?;
         }
-        
+
         self.lexxor_result = None;
-        
+
         // Then prepend the rewound token (it goes first)
         self.cache
             .prepend(&token.value.chars().collect::<Vec<char>>())
