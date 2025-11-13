@@ -20,7 +20,7 @@ path = "src/lib.rs"
 [dependencies]
 arrayvec = "0.7.6"
 
-[dev-dependencies2
+[dev-dependencies]
 criterion = "0.5"
 rand = "0.9.1"
 
