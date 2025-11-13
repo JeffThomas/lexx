@@ -1,6 +1,6 @@
 [package]
 name = "lexxor"
-version = "0.9.1"
+version = "0.9.2"
 edition = "2024"
 description = "A fast, extensible, greedy, single-pass text tokenizer for Rust"
 authors = ["Jeff M. Thomas <jeffthomas3000@gmail.com>"]
@@ -20,7 +20,7 @@ path = "src/lib.rs"
 [dependencies]
 arrayvec = "0.7.6"
 
-[dev-dependencies]
+[dev-dependencies2
 criterion = "0.5"
 rand = "0.9.1"
 
